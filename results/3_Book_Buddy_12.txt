@@ -1,0 +1,28 @@
+=== TEST RESULT REPORT ===
+Student: Book Buddy (Reg: 12)
+Test: 3
+Final Score: 0 / 20
+Status: FAILED
+Submitted At: 2026-03-12 17:54:29
+=========================
+
+Question: Sum of Array Elements
+Language: python
+Test Cases Passed: 0/3
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+
+Question: Find Maximum in Array
+Language: python
+Test Cases Passed: 0/3
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+

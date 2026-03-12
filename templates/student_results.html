@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ test.test_title }} - Results | BOOK BUDDY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base Styles & Color Palette */
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f8fafc;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            /* Status Colors */
+            --success-color: #059669;
+            --success-bg: #ecfdf5;
+            --warning-color: #d97706;
+            --warning-bg: #fffbeb;
+            --danger-color: #dc2626;
+            --danger-bg: #fef2f2;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--brand-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 0;
+            margin-bottom: 40px;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-wrapper img { height: 35px; object-fit: contain; }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-navy);
+            letter-spacing: 0.5px;
+        }
+
+        /* Result Overview Card */
+        .result-hero-card {
+            background: var(--brand-white);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 10px 40px rgba(10, 36, 114, 0.05);
+            border-top: 6px solid var(--brand-navy);
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            color: var(--brand-navy);
+            font-weight: 800;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Score Circle */
+        .score-circle-wrapper {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto;
+        }
+
+        .score-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 0 10px rgba(0,0,0,0.05);
+            background: var(--brand-white);
+            position: relative;
+            z-index: 2;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        /* Score Colors */
+        .score-high { color: var(--success-color); box-shadow: inset 0 0 0 10px var(--success-color); }
+        .score-medium { color: var(--warning-color); box-shadow: inset 0 0 0 10px var(--warning-color); }
+        .score-low { color: var(--brand-crimson); box-shadow: inset 0 0 0 10px var(--brand-crimson); }
+
+        /* Stat Boxes */
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border-color: #cbd5e1;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--brand-white);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            color: var(--brand-navy);
+        }
+
+        .stat-content label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .stat-content h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-passed { background: var(--success-bg); color: var(--success-color); border: 1px solid #a7f3d0; }
+        .status-failed { background: var(--danger-bg); color: var(--brand-crimson); border: 1px solid #fecaca; }
+
+        /* Question Breakdown Cards */
+        .section-title {
+            color: var(--brand-navy);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submission-card {
+            background: var(--brand-white);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+
+        .submission-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 5px 15px rgba(10,36,114,0.05);
+        }
+
+        .q-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-custom-navy {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-navy:hover {
+            background-color: #071952;
+            color: var(--brand-white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10, 36, 114, 0.2);
+        }
+
+        .btn-outline-navy {
+            color: var(--brand-navy);
+            border: 2px solid var(--brand-navy);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .btn-outline-navy:hover {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+        }
+
+        /* Print Styles */
+        @media print {
+            .navbar, .btn, .print-hide { display: none !important; }
+            body { background: white; }
+            .result-hero-card { box-shadow: none; border: 1px solid #ccc; padding: 1.5rem; }
+            .submission-card { break-inside: avoid; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="brand-wrapper" href="/">
+                <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <button onclick="window.print()" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold print-hide">
+                    <i class="bi bi-printer me-1"></i> Print Report
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 900px;">
+        
+        <div class="result-hero-card">
+            <div class="text-center page-header mb-5">
+                <h1>{{ test.test_title }}</h1>
+                <p class="text-muted fw-medium fs-5"><i class="bi bi-file-earmark-bar-graph me-2"></i>Assessment Report</p>
+            </div>
+            
+            {% if result %}
+            <div class="row align-items-center g-4">
+                <div class="col-md-4 text-center">
+                    <div class="score-circle-wrapper">
+                        <div class="score-circle 
+                            {% if result.percentage >= 70 %}score-high
+                            {% elif result.percentage >= 40 %}score-medium
+                            {% else %}score-low{% endif %}">
+                            <span class="score-value">{{ "%.0f"|format(result.percentage) }}<small style="font-size: 1.2rem;">%</small></span>
+                            <span class="score-label">Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="stat-box">
+                                <div class="stat-icon"><i class="bi bi-bullseye"></i></div>
+                                <div class="stat-content">
+                                    <label>Marks Earned</label>
+                                    <h3>{{ result.total_marks_obtained }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="stat-box">
+                                <div class="stat-icon"><i class="bi bi-layers"></i></div>
+                                <div class="stat-content">
+                                    <label>Total Possible</label>
+                                    <h3>{{ result.total_marks_possible }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stat-box justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="stat-icon"><i class="bi bi-shield-check"></i></div>
+                                    <div class="stat-content">
+                                        <label>Final Status</label>
+                                        <h3 class="d-none d-sm-block">Evaluation Complete</h3>
+                                    </div>
+                                </div>
+                                <span class="status-badge {% if result.status == 'passed' %}status-passed{% else %}status-failed{% endif %}">
+                                    {% if result.status == 'passed' %}
+                                        <i class="bi bi-check-circle-fill"></i> PASSED
+                                    {% else %}
+                                        <i class="bi bi-x-circle-fill"></i> FAILED
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox text-muted opacity-50 mb-3 d-block" style="font-size: 4rem;"></i>
+                <h3 class="fw-bold mb-3 text-dark">No Results Found</h3>
+                <p class="text-muted mb-4">It looks like you haven't completed this assessment yet.</p>
+                <a href="{{ url_for('take_test', title=test.test_title) }}" class="btn btn-custom-navy print-hide">
+                    <i class="bi bi-play-circle-fill me-2"></i>Start Assessment Now
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if result %}
+        <div class="mt-5">
+            <h3 class="section-title"><i class="bi bi-list-check"></i> Question Breakdown</h3>
+            
+            {% for submission in submissions %}
+            <div class="submission-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
+                    <div>
+                        <span class="text-muted fw-bold small text-uppercase letter-spacing-1">Question {{ loop.index }}</span>
+                        <h4 class="q-title mt-1">{{ submission.question.title }}</h4>
+                    </div>
+                    <span class="status-badge {% if submission.status == 'Accepted' %}status-passed{% else %}status-failed{% endif %}">
+                        {% if submission.status == 'Accepted' %}
+                            <i class="bi bi-check2"></i> Accepted
+                        {% else %}
+                            <i class="bi bi-x-lg"></i> Failed
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
+                    <div class="metric-pill">
+                        <i class="bi bi-award text-warning"></i>
+                        {{ submission.marks_obtained }} / {{ submission.total_marks }} Points
+                    </div>
+                    <div class="metric-pill">
+                        <i class="bi bi-diagram-3 text-primary"></i>
+                        Passed {{ submission.test_cases_passed }} of {{ submission.total_test_cases }} Cases
+                    </div>
+                    <div class="metric-pill">
+                        <i class="bi bi-code-slash text-secondary"></i>
+                        Lang: <span class="text-dark font-monospace ms-1">{{ submission.language|upper }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-5 mb-4 print-hide">
+            <a href="{{ url_for('student_test', id=current_user.id) }}" class="btn btn-outline-navy">
+                <i class="bi bi-arrow-left me-2"></i>Back to My Assessments
+            </a>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Results | BOOK BUDDY Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Base Styles & Color Palette */
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f8fafc;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            /* Status Colors */
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--brand-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 0;
+            margin-bottom: 30px;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-wrapper img { height: 40px; object-fit: contain; }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-navy);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-badge {
+            background-color: rgba(10, 36, 114, 0.1);
+            color: var(--brand-navy);
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            margin-left: 10px;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .back-link:hover {
+            color: var(--brand-crimson);
+            background-color: #fce7ec;
+        }
+
+        /* Top Summary Cards */
+        .summary-card {
+            background: var(--brand-white);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .icon-blue { background: #e0e7ff; color: #3730a3; }
+        .icon-green { background: #dcfce7; color: #166534; }
+        .icon-yellow { background: #fef3c7; color: #a16207; }
+        .icon-red { background: #fee2e2; color: #991b1b; }
+
+        .summary-info h3 { font-size: 1.5rem; font-weight: 800; margin: 0; color: var(--text-main); }
+        .summary-info p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Controls Section */
+        .controls-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: var(--brand-white);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-color);
+        }
+
+        .search-wrapper {
+            position: relative;
+            min-width: 300px;
+        }
+        .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-wrapper input {
+            width: 100%; padding: 10px 15px 10px 40px; border-radius: 8px; border: 1px solid var(--border-color); background: #f8fafc;
+        }
+        .search-wrapper input:focus { border-color: var(--brand-navy); outline: none; box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1); }
+
+        .btn-custom-crimson {
+            background-color: var(--brand-crimson); color: var(--brand-white); border: none; font-weight: 600; border-radius: 8px; padding: 10px 20px; transition: all 0.3s;
+        }
+        .btn-custom-crimson:hover { background-color: #5a0b1f; color: var(--brand-white); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(116, 15, 40, 0.2); }
+
+        /* Table Styling */
+        .table-card {
+            background: var(--brand-white); border-radius: 16px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04); overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .table th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; padding: 16px; border-bottom: 2px solid var(--border-color); }
+        .table td { padding: 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+        .table tbody tr:hover { background-color: #f8fafc; }
+
+        /* Student Meta */
+        .student-meta { display: flex; align-items: center; gap: 12px; }
+        .avatar-box { width: 38px; height: 38px; background: linear-gradient(135deg, var(--brand-navy), #1e40af); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; text-transform: uppercase; }
+        .reg-no { font-family: 'Fira Code', monospace; color: var(--text-muted); font-size: 0.8rem; }
+
+        /* Score Progress Bar */
+        .score-container { display: flex; align-items: center; gap: 10px; width: 150px; }
+        .score-text { font-weight: 700; font-size: 0.95rem; min-width: 40px; }
+        .progress { height: 8px; flex-grow: 1; border-radius: 4px; background-color: #e2e8f0; }
+        .progress-bar { border-radius: 4px; }
+        
+        .score-high .score-text { color: var(--success-color); }
+        .score-high .progress-bar { background-color: var(--success-color); }
+        
+        .score-med .score-text { color: var(--warning-color); }
+        .score-med .progress-bar { background-color: var(--warning-color); }
+        
+        .score-low .score-text { color: var(--danger-color); }
+        .score-low .progress-bar { background-color: var(--danger-color); }
+
+        /* Badges & Times */
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-transform: uppercase; }
+        .status-passed { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-failed { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .status-live { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+
+        .time-box { font-family: 'Fira Code', monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; color: var(--brand-navy); font-weight: 600; display: inline-block; }
+
+        .pulse-dot { width: 8px; height: 8px; background-color: #0ea5e9; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(14, 165, 233, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); } }
+
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="/admin/test_maintain" class="back-link" title="Back to Directory">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+                <a class="brand-wrapper" href="/admin">
+                    <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                    <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+                    <span class="admin-badge d-none d-md-inline-block">RESULTS DASHBOARD</span>
+                </a>
+            </div>
+
+            <div class="ms-auto">
+                <a href="/logout" class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-semibold">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <div class="mb-4">
+            <h2 class="fw-bold mb-1" style="color: var(--brand-navy);">{{ test.test_title|default('Assessment') }} Results</h2>
+            <p class="text-muted">Live tracking and performance metrics for all submitted candidates.</p>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="summary-card">
+                    <div class="summary-icon icon-blue"><i class="bi bi-people-fill"></i></div>
+                    <div class="summary-info">
+                        <p>Total Submissions</p>
+                        <h3>{{ results|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="summary-card">
+                    <div class="summary-icon icon-green"><i class="bi bi-check-circle-fill"></i></div>
+                    <div class="summary-info">
+                        <p>Passed Candidates</p>
+                        <h3>{{ results|selectattr('status', 'equalto', 'passed')|list|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="summary-card">
+                    <div class="summary-icon icon-red"><i class="bi bi-x-circle-fill"></i></div>
+                    <div class="summary-info">
+                        <p>Failed Candidates</p>
+                        <h3>{{ results|selectattr('status', 'equalto', 'failed')|list|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="summary-card">
+                    <div class="summary-icon icon-yellow"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="summary-info">
+                        <p>Avg. Score</p>
+                        {% set total_score = results|map(attribute='percentage')|sum %}
+                        {% set count = results|length %}
+                        <h3>{% if count > 0 %}{{ (total_score / count)|round|int }}%{% else %}0%{% endif %}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by Name or Register No..." onkeyup="filterTable()">
+            </div>
+            
+            <div class="d-flex gap-2">
+                <select id="statusFilter" class="form-select" style="width: auto;" onchange="filterStatus()">
+                    <option value="All">All Statuses</option>
+                    <option value="Passed">Passed</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Live">In Progress</option>
+                </select>
+                <button type="button" class="btn btn-custom-crimson" onclick="exportToPDF()">
+                    <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="card table-card mb-5">
+            <div class="table-responsive">
+                <table id="resultsTable" class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Candidate Profile</th>
+                            <th>Timing (In / Out)</th>
+                            <th>Evaluation Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        
+                        {% for r in results %}
+                        
+                        {% set score_class = 'score-high' if r.percentage >= 70 else ('score-med' if r.percentage >= 40 else 'score-low') %}
+                        
+                        {% set row_status = 'Passed' if r.status == 'passed' else ('Failed' if r.status == 'failed' else 'Live') %}
+
+                        <tr class="status-row" data-status="{{ row_status }}">
+                            <td class="ps-4">
+                                <div class="student-meta">
+                                    <div class="avatar-box">{{ r.student.name[0]|upper if r.student else '?' }}</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ r.student.name if r.student else 'Unknown Student' }}</div>
+                                        <div class="reg-no">REG: {{ r.student.register if r.student else 'N/A' }}</div>
+                                        <div class="badge bg-light text-secondary border mt-1" style="font-size: 0.65rem;">{{ r.student.department if r.student else 'N/A' }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    <div><small class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Entry:</small> <span class="time-box">{{ r.entry_time.strftime('%I:%M %p') if r.entry_time else 'N/A' }}</span></div>
+                                    
+                                    {% if r.exit_time %}
+                                        <div><small class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Exit:</small> <span class="time-box">{{ r.exit_time.strftime('%I:%M %p') }}</span></div>
+                                    {% else %}
+                                        <div><small class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Exit:</small> <span class="text-info small fst-italic">Currently Testing...</span></div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            
+                            <td>
+                                {% if r.exit_time or r.status %}
+                                    <div class="score-container {{ score_class }}">
+                                        <span class="score-text">{{ "%.0f"|format(r.percentage) }}%</span>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ r.percentage }}%" aria-valuenow="{{ r.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">{{ r.total_marks_obtained }} / {{ r.total_marks_possible }} Marks</small>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">Score pending...</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td class="pe-4">
+                                {% if r.status == 'passed' %}
+                                    <span class="status-badge status-passed"><i class="bi bi-check2-all"></i> Passed</span>
+                                {% elif r.status == 'failed' %}
+                                    <span class="status-badge status-failed"><i class="bi bi-x-lg"></i> Failed</span>
+                                {% else %}
+                                    <span class="status-badge status-live"><span class="pulse-dot"></span> Testing</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <i class="bi bi-clipboard-x text-muted opacity-50 mb-3 d-block" style="font-size: 3rem;"></i>
+                                <h5 class="fw-bold text-dark">No Results Yet</h5>
+                                <p class="text-muted">No students have attempted or completed this assessment.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Search Filter (Name/Reg No)
+        function filterTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr.status-row');
+
+            rows.forEach(row => {
+                // Search text inside the first column (Profile)
+                const profileText = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                
+                if (profileText.includes(input)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            // Re-apply dropdown status filter to ensure accuracy
+            filterStatus(); 
+        }
+
+        // Dropdown Status Filter
+        function filterStatus() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const inputFilter = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr.status-row');
+            
+            rows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                const profileText = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                
+                const matchesStatus = (statusFilter === 'All' || rowStatus === statusFilter);
+                const matchesSearch = profileText.includes(inputFilter);
+
+                if (matchesStatus && matchesSearch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // PDF Generation
+        function exportToPDF() {
+            if (!window.jspdf) {
+                Swal.fire('Error', 'PDF library not loaded. Check internet connection.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Generating Report...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            setTimeout(() => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'pt', 'a4'); // Portrait mode
+                    
+                    // Report Headers
+                    doc.setFontSize(18);
+                    doc.setTextColor(10, 36, 114); // Navy
+                    doc.text("Assessment Results Report", 40, 40);
+                    
+                    doc.setFontSize(12);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text("Test: {{ test.test_title|default('Assessment') }}", 40, 60);
+                    
+                    const dateObj = new Date();
+                    doc.text(`Generated on: ${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString()}`, 40, 75);
+
+                    // Generate AutoTable
+                    doc.autoTable({
+                        html: '#resultsTable',
+                        startY: 90,
+                        theme: 'grid',
+                        headStyles: { fillColor: [10, 36, 114] }, // Navy Header
+                        styles: { fontSize: 9, cellPadding: 6 },
+                        
+                        // Parse cells to clean up raw HTML (remove spacing/newlines from avatars/badges)
+                        didParseCell: function(data) {
+                            if (data.section === 'body') {
+                                // Clean up text to fit nicely in PDF
+                                let cleanedText = data.cell.raw.textContent.replace(/\s+/g, ' ').trim();
+                                data.cell.text = cleanedText;
+                            }
+                        }
+                    });
+
+                    doc.save(`Result_Report_{{ test.id|default('00') }}.pdf`);
+                    
+                    Swal.close();
+                    Swal.fire({
+                        toast: true, position: 'top-end', icon: 'success', title: 'Downloaded Successfully', showConfirmButton: false, timer: 3000
+                    });
+
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Failed', 'There was an issue creating the PDF.', 'error');
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test Assignment | BOOK BUDDY Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Base Styles & Color Palette */
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f4f7f6;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--brand-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 0;
+            margin-bottom: 30px;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-wrapper img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-navy);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-badge {
+            background-color: rgba(10, 36, 114, 0.1);
+            color: var(--brand-navy);
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            margin-left: 10px;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .back-link:hover {
+            color: var(--brand-crimson);
+            background-color: #fce7ec;
+        }
+
+        /* Layout & Cards */
+        .sticky-form {
+            position: sticky;
+            top: 90px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+            background-color: var(--brand-white);
+        }
+
+        .form-card {
+            border-top: 5px solid var(--brand-navy);
+        }
+
+        /* Search Bar */
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .search-wrapper input:focus {
+            outline: none;
+            border-color: var(--brand-navy);
+            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
+        }
+
+        /* Table Styling */
+        .table th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            padding: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .ref-tag {
+            background-color: rgba(10, 36, 114, 0.08);
+            color: var(--brand-navy);
+            font-family: Consolas, monospace;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .diff-badge {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Add Button */
+        .btn-add {
+            background-color: rgba(10, 36, 114, 0.1);
+            color: var(--brand-navy);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-add:hover {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+        }
+
+        /* Form Inputs */
+        .form-label {
+            color: var(--brand-navy);
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--brand-navy);
+            background-color: var(--brand-white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
+        }
+
+        /* Selected Items Queue */
+        .selected-item {
+            background: var(--brand-white);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--brand-navy);
+            transition: all 0.2s;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .selected-item:hover {
+            background: #fff0f0;
+            border-left-color: var(--brand-crimson);
+            border-color: #ffcccc;
+        }
+
+        .btn-remove-item {
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .selected-item:hover .btn-remove-item {
+            color: var(--brand-crimson);
+        }
+
+        /* Submit Button */
+        .btn-custom-crimson {
+            background-color: var(--brand-crimson);
+            color: var(--brand-white);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+
+        .btn-custom-crimson:hover:not(:disabled) {
+            background-color: #5a0b1f;
+            color: var(--brand-white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(116, 15, 40, 0.2);
+        }
+
+        .btn-custom-crimson:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            
+            <div class="d-flex align-items-center">
+                <a href="/admin" class="back-link" title="Back to Dashboard">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+
+                <a class="brand-wrapper" href="/admin">
+                    <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                    <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+                    <span class="admin-badge d-none d-md-inline-block">TEST CREATOR</span>
+                </a>
+            </div>
+
+            <div class="ms-auto">
+                <a href="/logout" class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-semibold">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <div>
+                        <h2 class="h4 mb-1 fw-bold" style="color: var(--brand-navy);">Select Questions</h2>
+                        <p class="text-muted small mb-0">Add questions from the bank to build your test.</p>
+                    </div>
+                    <div class="search-wrapper">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="QuestionSearch" placeholder="Search by title or ID..." onkeyup="filterTable()">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table id="question_table" class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4" style="width: 15%;">ID</th>
+                                    <th style="width: 50%;">Question Title</th>
+                                    <th style="width: 20%;">Difficulty</th>
+                                    <th class="text-end pe-4" style="width: 15%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for q in questions %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="ref-tag">#{{ q.id }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-dark">{{ q.title }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="diff-badge">{{ q.difficulty|default('Easy') }}</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn-add" onclick="addToQueue('{{ q.id }}', '{{ q.title|replace('\'', '\\\'') }}')" title="Add to Test">
+                                            <i class="bi bi-plus-lg"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-2 mb-2 d-block"></i>
+                                        No questions available in the bank.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sticky-form">
+                    <div class="card form-card p-4">
+                        <h5 class="mb-4 fw-bold" style="color: var(--brand-navy);">Test Assignment Config</h5>
+                        
+                        <form action="/add-test" method="POST" id="bulk-form">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Daily Test Title</label>
+                                <input type="text" name="test_title" class="form-control" placeholder="e.g. WEEK-01 ASSESSMENT" required>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="form-label fw-bold mb-0">Selected Questions</label>
+                                <span class="badge" style="background-color: var(--brand-navy);" id="count-badge">0</span>
+                            </div>
+                            
+                            <div id="selected-list" class="mb-4" style="min-height: 100px; max-height: 350px; overflow-y: auto; padding-right: 5px;">
+                                <div id="empty-msg" class="text-center py-4 border rounded-3" style="background-color: #f8fafc; border-style: dashed !important;">
+                                    <i class="bi bi-card-list fs-3 text-muted mb-2 d-block"></i>
+                                    <p class="text-muted small mb-0">No questions selected yet.<br>Click "Add" from the table.</p>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-custom-crimson w-100 py-2 fs-6" id="submit-btn" disabled onclick="confirmSubmission()">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Create Assignment
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let selectedQuestions = new Set();
+
+        // Toast Notification Config
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+
+        function addToQueue(id, title) {
+            if (selectedQuestions.has(id)) {
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Question already added to the test!'
+                });
+                return; 
+            }
+
+            selectedQuestions.add(id);
+            document.getElementById('empty-msg').style.display = 'none';
+            document.getElementById('submit-btn').disabled = false;
+
+            const list = document.getElementById('selected-list');
+            const item = document.createElement('div');
+            item.className = 'selected-item shadow-sm';
+            item.id = `queued-${id}`;
+            item.innerHTML = `
+                <div class="small fw-bold text-dark text-truncate pe-2" style="max-width: 220px;" title="${title}">
+                    ${title}
+                </div>
+                <input type="hidden" name="question_ids[]" value="${id}">
+                <button type="button" class="btn-remove-item" onclick="removeFromQueue('${id}')" title="Remove from test">
+                    <i class="bi bi-x-circle-fill"></i>
+                </button>
+            `;
+            list.appendChild(item);
+            updateCount();
+
+            // Optional visual feedback
+            Toast.fire({
+                icon: 'success',
+                title: 'Added to test queue'
+            });
+        }
+
+        function removeFromQueue(id) {
+            selectedQuestions.delete(id);
+            document.getElementById(`queued-${id}`).remove();
+
+            if (selectedQuestions.size === 0) {
+                document.getElementById('empty-msg').style.display = 'block';
+                document.getElementById('submit-btn').disabled = true;
+            }
+            updateCount();
+        }
+
+        function updateCount() {
+            const count = selectedQuestions.size;
+            document.getElementById('count-badge').innerText = count;
+            document.getElementById('submit-btn').disabled = (count === 0);
+        }
+
+        function filterTable() {
+            const input = document.getElementById("QuestionSearch").value.toLowerCase();
+            const rows = document.querySelectorAll("#question_table tbody tr");
+            
+            rows.forEach(row => {
+                // Prevent hiding the "Empty state" row if no questions exist
+                if(row.getElementsByTagName("td").length === 1) return;
+                
+                row.style.display = row.textContent.toLowerCase().includes(input) ? "" : "none";
+            });
+        }
+
+        // Intercept form submission to add a confirmation modal
+        function confirmSubmission() {
+            const titleInput = document.querySelector('input[name="test_title"]').value;
+            
+            // Basic HTML5 validation check for the title field
+            if(!titleInput.trim()) {
+                document.querySelector('input[name="test_title"]').reportValidity();
+                return;
+            }
+
+            Swal.fire({
+                title: 'Create Assignment?',
+                html: `You are about to create the test <strong>"${titleInput}"</strong> containing <strong>${selectedQuestions.size}</strong> questions.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0A2472', // Navy
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Create it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Saving...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    // Actually submit the form
+                    document.getElementById('bulk-form').submit();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Directory | BOOK BUDDY Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Base Styles & Color Palette */
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f4f7f6;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--brand-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 0;
+            margin-bottom: 30px;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-wrapper img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-navy);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-badge {
+            background-color: rgba(10, 36, 114, 0.1);
+            color: var(--brand-navy);
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            margin-left: 10px;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .back-link:hover {
+            color: var(--brand-crimson);
+            background-color: #fce7ec;
+        }
+
+        /* Sidebar Filters */
+        .sticky-sidebar {
+            position: sticky;
+            top: 100px;
+        }
+
+        .filter-menu .nav-link {
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-menu .nav-link:hover {
+            background-color: #f1f5f9;
+            color: var(--brand-navy);
+        }
+
+        .filter-menu .nav-link.active {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+            box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2);
+        }
+
+        /* Test Card Styling */
+        .test-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: var(--brand-white);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Status Badges */
+        .badge-live { background: #e6fcf5; color: #0ca678; border: 1px solid #0ca678; font-weight: 700; }
+        .badge-upcoming { background: #fff8e6; color: #f59e0b; border: 1px solid #f59e0b; font-weight: 700; }
+        .badge-completed { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; font-weight: 700; }
+        .badge-draft { background: #fff0f0; color: var(--brand-crimson); border: 1px solid var(--brand-crimson); font-weight: 700; }
+
+        /* Question List UI */
+        .question-list-wrapper {
+            max-height: 250px; 
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 20px;
+        }
+
+        .question-list-wrapper::-webkit-scrollbar { width: 6px; }
+        .question-list-wrapper::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .question-list-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .assigned-q-item {
+            background-color: var(--brand-white);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .assigned-q-item:last-child { margin-bottom: 0; }
+        .assigned-q-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(10, 36, 114, 0.05);
+            transform: translateX(4px); 
+        }
+
+        .q-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background-color: rgba(10, 36, 114, 0.05);
+            color: var(--brand-navy);
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+
+        .btn-remove-q {
+            color: #94a3b8;
+            background: none;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-remove-q:hover {
+            color: var(--brand-crimson);
+            background-color: rgba(116, 15, 40, 0.1);
+        }
+
+        /* Buttons */
+        .btn-custom-navy {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-navy:hover {
+            background-color: #071952;
+            color: var(--brand-white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2);
+        }
+
+        .btn-outline-navy {
+            color: var(--brand-navy);
+            border: 1px solid var(--brand-navy);
+            font-weight: 600;
+            transition: all 0.2s;
+            background-color: transparent;
+        }
+
+        .btn-outline-navy:hover {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+        }
+
+        /* Quick Schedule Button */
+        .btn-quick-schedule {
+            background-color: #e0e7ff;
+            color: #3730a3;
+            border: 1px dashed #3730a3;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-quick-schedule:hover {
+            background-color: #c7d2fe;
+            color: #312e81;
+        }
+
+        .modal-header-navy {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+            border-bottom: none;
+        }
+
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="/admin" class="back-link" title="Back to Dashboard">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+                <a class="brand-wrapper" href="/admin">
+                    <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                    <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+                    <span class="admin-badge d-none d-md-inline-block">TEST MANAGER</span>
+                </a>
+            </div>
+
+            <div class="ms-auto">
+                <a href="/logout" class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-semibold">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--brand-navy);">Test Directory</h2>
+                <p class="text-muted mb-0">Manage scheduling, monitor live status, and configure assignments.</p>
+            </div>
+            <a href="/create_test" class="btn btn-custom-navy shadow-sm py-2 px-4 rounded-3">
+                <i class="bi bi-plus-lg me-2"></i>Create New Test
+            </a>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-3">
+                <div class="sticky-sidebar bg-white p-3 rounded-4 shadow-sm">
+                    <h6 class="text-uppercase fw-bold text-muted small mb-3 ps-2" style="letter-spacing: 0.5px;">Categories</h6>
+                    <div class="nav flex-column filter-menu" id="testFilters">
+                        <button class="nav-link active border-0 text-start w-100" onclick="setFilter('all', this)">
+                            <i class="bi bi-grid-1x2"></i> All Tests
+                        </button>
+                        <button class="nav-link border-0 text-start w-100" onclick="setFilter('live', this)">
+                            <i class="bi bi-broadcast"></i> Live & Upcoming
+                        </button>
+                        <button class="nav-link border-0 text-start w-100" onclick="setFilter('draft', this)">
+                            <i class="bi bi-file-earmark-text"></i> Drafts
+                        </button>
+                        <button class="nav-link border-0 text-start w-100" onclick="setFilter('completed', this)">
+                            <i class="bi bi-check2-circle"></i> Completed
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <div class="row g-4" id="cards-container">
+                    
+                    {% for title, entries in grouped_tests.items() %}
+                    {% set first_entry = entries[0] %}
+                    
+                    <input type="hidden" id="start-{{ loop.index }}" value="{{ first_entry.start_time.isoformat() if first_entry.start_time else '' }}">
+                    <input type="hidden" id="end-{{ loop.index }}" value="{{ first_entry.end_time.isoformat() if first_entry.end_time else '' }}">
+                    <input type="hidden" id="status-{{ loop.index }}" value="{{ first_entry.status }}">
+
+                    <div class="col-md-6 test-card-col" id="test-col-{{ loop.index }}">
+                        <div class="card test-card">
+                            <div class="card-body p-4 d-flex flex-column h-100">
+                                
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div id="badge-container-{{ loop.index }}" class="mb-2">
+                                            <span class="badge badge-draft">Loading Status...</span>
+                                        </div>
+                                        <h4 class="fw-bold mb-1" style="color: var(--brand-navy);">{{ title }}</h4>
+                                    </div>
+
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm shadow-sm border rounded-3" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu shadow border-0 rounded-3">
+                                            <li><a class="dropdown-item fw-medium py-2" href="#" data-bs-toggle="modal" data-bs-target="#timeModal{{ loop.index }}">
+                                                <i class="bi bi-calendar-event me-2 text-warning"></i>Schedule Config</a>
+                                            </li>
+                                            <li><a class="dropdown-item fw-medium py-2" href="{{ url_for('live_test', title=title) }}">
+                                                <i class="bi bi-broadcast me-2 text-success"></i>Monitor Live</a>
+                                            </li>
+                                            <li><a class="dropdown-item fw-medium py-2" href="{{ url_for('test_results', test_id=first_entry.id) }}">
+                                                <i class="bi bi-bar-chart-line me-2 text-primary"></i>View Results</a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger fw-bold py-2" href="#" onclick="confirmDelete(event, '{{ url_for('delete_entire_test', title=title) }}')">
+                                                <i class="bi bi-trash3 me-2"></i>Delete Test</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div class="text-muted small mb-1">
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        {% if first_entry.start_time %}
+                                            <span id="display-start-{{ loop.index }}">{{ first_entry.start_time.strftime('%b %d, %I:%M %p') }}</span> - 
+                                            <span id="display-end-{{ loop.index }}">{{ first_entry.end_time.strftime('%I:%M %p') }}</span>
+                                        {% else %}
+                                            <span class="text-danger">Schedule Not Configured</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <h6 class="text-uppercase small fw-bold text-muted mb-3" style="letter-spacing: 0.5px;">Questions Assigned ({{ entries|length }})</h6>
+                                    
+                                    <div class="question-list-wrapper">
+                                        {% for entry in entries %}
+                                        <div class="assigned-q-item">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="q-icon-wrapper">
+                                                    <i class="bi bi-code-square"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="d-block fw-bold text-dark mb-0">Question ID: {{ entry.question_id }}</span>
+                                                    <span class="badge bg-light text-secondary border border-secondary-subtle font-monospace mt-1" style="font-size: 0.65rem;">Programming Task</span>
+                                                </div>
+                                            </div>
+                                            <a href="#" onclick="removeQuestion(event, '{{ url_for('delete_test_entry', entry_id=entry.id) }}')" class="btn-remove-q" title="Remove question">
+                                                <i class="bi bi-trash3"></i>
+                                            </a>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 mt-auto pt-3 border-top">
+                                    <button class="btn btn-outline-navy rounded-pill fw-semibold py-2" data-bs-toggle="modal" data-bs-target="#timeModal{{ loop.index }}">
+                                        <i class="bi bi-calendar-check me-2"></i>Update Schedule
+                                    </button>
+                                    <a href="{{ url_for('test_results', test_id=first_entry.id) }}" id="results-btn-{{ loop.index }}" class="btn btn-light border rounded-pill fw-semibold py-2" style="display: none;">
+                                        <i class="bi bi-journal-check me-2 text-success"></i>View Results
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="timeModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <form action="{{ url_for('set_test_timing', title=title) }}" method="POST" class="modal-content border-0 shadow-lg">
+                                <div class="modal-header modal-header-navy">
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-clock me-2"></i>Schedule Config</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    
+                                    <div class="mb-4 text-center">
+                                        <button type="button" class="btn btn-quick-schedule w-100 py-2 rounded-3" onclick="setAutoSchedule('{{ loop.index }}')">
+                                            <i class="bi bi-lightning-charge-fill me-2"></i>Auto-Schedule: Today 5:00 PM - 6:30 PM
+                                        </button>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold" style="color: var(--brand-navy);">Start Date & Time</label>
+                                        <input type="datetime-local" id="modal-start-{{ loop.index }}" name="start_time" class="form-control" 
+                                               value="{{ first_entry.start_time.strftime('%Y-%m-%dT%H:%M') if first_entry.start_time }}" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold" style="color: var(--brand-navy);">End Date & Time</label>
+                                        <input type="datetime-local" id="modal-end-{{ loop.index }}" name="end_time" class="form-control" 
+                                               value="{{ first_entry.end_time.strftime('%Y-%m-%dT%H:%M') if first_entry.end_time }}" required>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label fw-bold text-muted small">Force Override Status (Optional)</label>
+                                        <select id="modal-status-{{ loop.index }}" name="status" class="form-select">
+                                            <option value="draft" {% if first_entry.status == 'draft' %}selected{% endif %}>Draft (Hidden)</option>
+                                            <option value="scheduled" {% if first_entry.status == 'scheduled' %}selected{% endif %}>Auto-Schedule (Recommended)</option>
+                                            <option value="live" {% if first_entry.status == 'live' %}selected{% endif %}>Force Live</option>
+                                            <option value="completed" {% if first_entry.status == 'completed' %}selected{% endif %}>Force Complete</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-custom-navy px-4">Save Configuration</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="col-12 text-center py-5 mt-4" id="empty-filter-state" style="display: none;">
+                        <i class="bi bi-folder-x display-1 text-muted opacity-50 mb-3 d-block"></i>
+                        <h4 class="fw-bold text-muted">No tests found in this category.</h4>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentFilter = 'all';
+
+        // 1. Sidebar Filter Logic
+        function setFilter(filterType, btnElement) {
+            currentFilter = filterType;
+            
+            // Highlight active button
+            document.querySelectorAll('#testFilters .nav-link').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            btnElement.classList.add('active');
+            
+            // Re-run status update to apply filter
+            updateTestStatuses();
+        }
+
+        // 2. Auto-Schedule (Today 5 PM to 6:30 PM)
+        function setAutoSchedule(index) {
+            const now = new Date();
+            
+            // Format current date as YYYY-MM-DD
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
+            // Target the specific modal's inputs
+            const startInput = document.getElementById(`modal-start-${index}`);
+            const endInput = document.getElementById(`modal-end-${index}`);
+            const statusSelect = document.getElementById(`modal-status-${index}`);
+            
+            // Set values
+            startInput.value = `${dateStr}T17:00`;
+            endInput.value = `${dateStr}T18:30`;
+            
+            // Set status to scheduled so it processes correctly
+            statusSelect.value = "scheduled";
+
+            // Visual feedback using SweetAlert Toast
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Time set to Today, 5:00 PM - 6:30 PM',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        }
+
+        // 3. Status Calculation and Filtering
+        function updateTestStatuses() {
+            const cardsCount = document.querySelectorAll('[id^="badge-container-"]').length;
+            const now = new Date(); 
+            let visibleCount = 0;
+
+            for(let i = 1; i <= cardsCount; i++) {
+                const startStr = document.getElementById(`start-${i}`).value;
+                const endStr = document.getElementById(`end-${i}`).value;
+                const dbStatus = document.getElementById(`status-${i}`).value;
+                const badgeContainer = document.getElementById(`badge-container-${i}`);
+                const resultsBtn = document.getElementById(`results-btn-${i}`);
+                const cardCol = document.getElementById(`test-col-${i}`);
+
+                let badgeHTML = '';
+                let calculatedCategory = '';
+
+                // Calculate Status
+                if (dbStatus === 'draft' || !startStr || !endStr) {
+                    badgeHTML = `<span class="badge badge-draft px-3 py-2">DRAFT</span>`;
+                    calculatedCategory = 'draft';
+                    if(resultsBtn) resultsBtn.style.display = 'none';
+                } 
+                else {
+                    const startTime = new Date(startStr);
+                    const endTime = new Date(endStr);
+
+                    if (now < startTime) {
+                        badgeHTML = `<span class="badge badge-upcoming px-3 py-2"><i class="bi bi-calendar-event me-1"></i> UPCOMING</span>`;
+                        calculatedCategory = 'live'; // Grouped with live for filtering
+                        if(resultsBtn) resultsBtn.style.display = 'none';
+                    } 
+                    else if (now >= startTime && now <= endTime) {
+                        badgeHTML = `<span class="badge badge-live px-3 py-2"><span class="spinner-grow spinner-grow-sm me-2 text-success" role="status"></span> LIVE NOW</span>`;
+                        calculatedCategory = 'live';
+                        if(resultsBtn) resultsBtn.style.display = 'none'; 
+                    } 
+                    else if (now > endTime || dbStatus === 'completed') {
+                        badgeHTML = `<span class="badge badge-completed px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> COMPLETED</span>`;
+                        calculatedCategory = 'completed';
+                        if(resultsBtn) resultsBtn.style.display = 'block'; 
+                    }
+                }
+
+                badgeContainer.innerHTML = badgeHTML;
+
+                // Apply Sidebar Filter
+                if (currentFilter === 'all' || calculatedCategory === currentFilter) {
+                    cardCol.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    cardCol.style.display = 'none';
+                }
+            }
+
+            // Show Empty State if no cards match filter
+            const emptyState = document.getElementById('empty-filter-state');
+            if (visibleCount === 0 && cardsCount > 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // Run immediately on load
+        document.addEventListener("DOMContentLoaded", function() {
+            updateTestStatuses();
+            setInterval(updateTestStatuses, 30000); // Re-check times every 30 seconds
+        });
+
+        // Safe Delete Popups
+        function confirmDelete(e, url) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Delete Entire Test?',
+                text: "This will permanently remove the test schedule and unassign all questions.",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#740f28', // Crimson
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Delete it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+
+        function removeQuestion(e, url) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Remove Question?',
+                text: "Are you sure you want to remove this question from the test?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0A2472', // Navy
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Remove'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

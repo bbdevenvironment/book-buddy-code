@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="15">
+    <title>Live Monitor: {{ title }} | BOOK BUDDY Admin</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f8fafc;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); color: var(--text-main); padding-bottom: 50px; }
+
+        /* Navbar */
+        .navbar { background-color: var(--brand-white); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); padding: 12px 0; margin-bottom: 30px; }
+        .brand-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-wrapper img { height: 40px; object-fit: contain; }
+        .brand-name { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--brand-navy); letter-spacing: 0.5px; }
+        .admin-badge { background-color: rgba(10, 36, 114, 0.1); color: var(--brand-navy); font-weight: 700; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; margin-left: 10px; }
+        .back-link { color: var(--text-muted); padding: 8px; border-radius: 50%; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; margin-right: 15px; }
+        .back-link:hover { color: var(--brand-crimson); background-color: #fce7ec; }
+
+        /* Monitor Header */
+        .monitor-header { background: var(--brand-white); border-radius: 16px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 25px; border-top: 5px solid #059669; display: flex; justify-content: space-between; align-items: center; }
+        
+        .pulse-dot { width: 12px; height: 12px; background-color: #059669; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); } 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); } }
+
+        /* Student Grid */
+        .student-card { background: var(--brand-white); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); height: 100%; transition: transform 0.2s; }
+        .student-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+        
+        .avatar-box { width: 45px; height: 45px; background: linear-gradient(135deg, var(--brand-navy), #1e40af); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
+        
+        .stat-pill { background: #f8fafc; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; text-align: center; flex: 1; }
+        .stat-pill span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 3px; }
+        .stat-pill strong { font-size: 1.1rem; color: var(--brand-navy); font-weight: 800; }
+
+        .submission-log { max-height: 120px; overflow-y: auto; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px; }
+        .submission-log::-webkit-scrollbar { width: 4px; }
+        .submission-log::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #f1f5f9; border-radius: 6px; margin-bottom: 6px; font-size: 0.85rem; }
+        .log-accepted { border-left: 3px solid #10b981; }
+        .log-partial { border-left: 3px solid #f59e0b; }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="/admin" class="back-link"><i class="bi bi-arrow-left"></i></a>
+                <div class="brand-wrapper">
+                    <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                    <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+                    <span class="admin-badge d-none d-md-inline-block">LIVE RESULTS</span>
+                </div>
+            </div>
+            <a href="/logout" class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-semibold">Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <div class="monitor-header">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--brand-navy);">{{ title }}</h2>
+                <p class="text-muted mb-0 fw-medium">Real-time coding submissions monitor</p>
+            </div>
+            <div class="text-end">
+                <div class="d-flex align-items-center justify-content-end gap-2 mb-1">
+                    <span class="pulse-dot"></span>
+                    <span class="fw-bold text-success text-uppercase" style="letter-spacing: 1px;">Live Now</span>
+                </div>
+                <small class="text-muted">Auto-refreshes every 15s</small>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% if student_results %}
+                {% for student_id, data in student_results.items() %}
+                <div class="col-lg-6 col-xl-4">
+                    <div class="student-card flex-column d-flex">
+                        
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="avatar-box">{{ data.student.name[0]|upper }}</div>
+                            <div>
+                                <h5 class="fw-bold mb-0 text-dark">{{ data.student.name }}</h5>
+                                <small class="text-muted font-monospace">{{ data.student.register }}</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <div class="stat-pill">
+                                <span>Total Marks</span>
+                                <strong>{{ data.total_marks }}</strong>
+                            </div>
+                            <div class="stat-pill">
+                                <span>Solved</span>
+                                <strong>{{ data.submissions|length }} / {{ test_group|length }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="submission-log flex-grow-1">
+                            <span class="d-block text-muted small fw-bold text-uppercase mb-2">Latest Submissions</span>
+                            {% for sub in data.submissions|sort(attribute='timestamp', reverse=true) %}
+                                <div class="log-item {% if sub.status == 'Accepted' %}log-accepted{% else %}log-partial{% endif %}">
+                                    <div>
+                                        <span class="fw-bold d-block" style="color: var(--brand-navy);">Q: {{ sub.question.title|truncate(15) }}</span>
+                                        <small class="text-muted font-monospace">{{ sub.timestamp.strftime('%H:%M:%S') }} | {{ sub.language }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge {% if sub.status == 'Accepted' %}bg-success{% else %}bg-warning text-dark{% endif %} mb-1">
+                                            {{ sub.status }}
+                                        </span>
+                                        <small class="d-block fw-bold">{{ sub.marks_obtained }} pts</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5 bg-white rounded-4 border">
+                        <i class="bi bi-laptop text-muted opacity-50 mb-3 d-block" style="font-size: 3rem;"></i>
+                        <h4 class="fw-bold" style="color: var(--brand-navy);">Waiting for students...</h4>
+                        <p class="text-muted">No coding submissions have been made for this assessment yet.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Management - BOOK BUDDY Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Base Styles & Color Palette */
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f4f7f6;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--brand-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 0;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .back-link:hover {
+            color: var(--brand-crimson);
+            background-color: #fce7ec;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-wrapper img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-navy);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-badge {
+            background-color: rgba(10, 36, 114, 0.1);
+            color: var(--brand-navy);
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            margin-right: 15px;
+        }
+
+        /* Header Section */
+        .header-section {
+            margin-bottom: 30px;
+        }
+        
+        .header-section h2 {
+            color: var(--brand-navy);
+            font-weight: 800;
+        }
+
+        /* Cards */
+        .card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+            background-color: var(--brand-white);
+        }
+        
+        .main-form-card {
+            border-top: 5px solid var(--brand-navy);
+        }
+
+        /* Form Controls */
+        .form-label {
+            color: var(--brand-navy);
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brand-navy);
+            background-color: var(--brand-white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
+        }
+
+        .font-monospace {
+            font-family: Consolas, Monaco, 'Courier New', monospace !important;
+            font-size: 0.9rem;
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        .font-monospace:focus {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        /* Buttons */
+        .btn-custom-navy {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-navy:hover {
+            background-color: #071952;
+            color: var(--brand-white);
+            transform: translateY(-1px);
+        }
+
+        .btn-custom-crimson {
+            background-color: var(--brand-crimson);
+            color: var(--brand-white);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-crimson:hover {
+            background-color: #5a0b1f;
+            color: var(--brand-white);
+            transform: translateY(-1px);
+        }
+
+        /* Test Case Container */
+        .test-case-item {
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--brand-crimson);
+            background-color: var(--brand-white);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            
+            <div class="d-flex align-items-center">
+                <a href="/admin" class="back-link" title="Back to Dashboard">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+                
+                <a href="/admin" class="brand-wrapper">
+                    <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                    <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <span class="admin-badge d-none d-sm-inline-block">ADMIN PORTAL</span>
+                <a href="/logout" class="btn btn-outline-danger btn-sm px-3 rounded-pill fw-semibold">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="header-section text-center">
+            <h2>Question Management</h2>
+            <p class="text-muted">Create, edit, or import coding challenges for students</p>
+        </div>
+
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold" style="color: var(--brand-navy);">Import Questions</h5>
+                        <p class="text-muted small mb-3">Upload a properly formatted JSON file to bulk-add questions.</p>
+                        <form action="/new_question" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="import_btn" value="1">
+                            <div class="mb-3">
+                                <input type="file" class="form-control" name="question_file" accept=".json" required>
+                            </div>
+                            <button type="submit" class="btn btn-custom-navy px-4">Import Data</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center">
+                        <h5 class="card-title fw-bold" style="color: var(--brand-navy);">Export Questions</h5>
+                        <p class="text-muted small mb-3">Download a backup of all existing questions in JSON format.</p>
+                        <div>
+                            <a href="/export_questions" class="btn btn-success px-4 fw-semibold">Export JSON Backup</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card main-form-card">
+            <div class="card-body p-4 p-md-5">
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-crimson);">Manual Question Entry</h4>
+                
+                <form action="/new_question" method="post">
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Question ID</label>
+                            <input class="form-control" name="question_id" required placeholder="e.g. Q101">
+                        </div>
+                        <div class="col-md-9">
+                            <label class="form-label fw-semibold">Question Title</label>
+                            <input name="title" type="text" class="form-control" required placeholder="e.g. Find Maximum Element">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Problem Description</label>
+                        <textarea class="form-control" name="description" rows="5" required placeholder="Describe the problem logic..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Input Format</label>
+                            <textarea class="form-control" name="input_format" rows="3" required placeholder="e.g. The first line contains an integer N..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Output Format</label>
+                            <textarea class="form-control" name="output_format" rows="3" required placeholder="e.g. Print a single integer representing..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Constraints</label>
+                        <textarea class="form-control font-monospace" name="constraints" rows="2" required placeholder="1 <= N <= 10^5"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Step-by-Step Explanation</label>
+                        <textarea class="form-control" name="explanation" rows="3" required placeholder="Break down the sample case logic to help students understand..."></textarea>
+                    </div>
+
+                    <hr class="my-5" style="border-color: #cbd5e1;">
+
+                    <div class="d-flex justify-content-between align-items-end mb-4">
+                        <div>
+                            <h4 class="mb-0 fw-bold" style="color: var(--brand-navy);">Test Cases</h4>
+                            <small class="text-muted">The first case is shown to students as a sample.</small>
+                        </div>
+                        <button type="button" class="btn btn-custom-navy btn-sm px-3" onclick="addTestCase()">+ Add Test Case</button>
+                    </div>
+                    
+                    <div id="test-cases-container">
+                        <div class="test-case-item rounded-3 p-4 mb-3 shadow-sm">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Input Data</label>
+                                    <textarea class="form-control font-monospace" name="test_inputs[]" rows="3" required></textarea>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Expected Output</label>
+                                    <textarea class="form-control font-monospace" name="test_outputs[]" rows="3" required></textarea>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-danger w-100 fw-semibold" onclick="removeTestCase(this)">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-5 pt-3 border-top align-items-center">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label fw-semibold">Difficulty Level</label>
+                            <select class="form-select form-select-lg" name="difficulty" required>
+                                <option value="" selected disabled>Choose level...</option>
+                                <option value="Easy">Easy</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Hard">Hard</option>
+                                <option value="Creativity">Creativity</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <button type="submit" class="btn btn-custom-crimson btn-lg px-5 shadow">
+                                Publish Question
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addTestCase() {
+            const container = document.getElementById('test-cases-container');
+            const newCase = document.createElement('div');
+            // Applying the exact same styling classes to dynamically generated cases
+            newCase.className = 'test-case-item rounded-3 p-4 mb-3 shadow-sm';
+            newCase.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Input Data</label>
+                        <textarea class="form-control font-monospace" name="test_inputs[]" rows="3" required></textarea>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Expected Output</label>
+                        <textarea class="form-control font-monospace" name="test_outputs[]" rows="3" required></textarea>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-danger w-100 fw-semibold" onclick="removeTestCase(this)">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newCase);
+            
+            // Optional: Smooth scroll down slightly when a new box is added
+            newCase.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function removeTestCase(button) {
+            const container = document.getElementById('test-cases-container');
+            if (container.children.length > 1) {
+                button.closest('.test-case-item').remove();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cannot Remove',
+                    text: 'You must provide at least one test case for the question.',
+                    confirmButtonColor: '#0A2472'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

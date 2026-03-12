@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Question | BOOK BUDDY Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Base Styles & Color Palette */
+        :root {
+            --brand-navy: #0A2472;
+            --brand-crimson: #740f28;
+            --brand-white: #ffffff;
+            --bg-light: #f8fafc;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--brand-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 12px 0;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .back-link:hover {
+            color: var(--brand-crimson);
+            background-color: #fce7ec;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-wrapper img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--brand-navy);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-badge {
+            background-color: rgba(10, 36, 114, 0.1);
+            color: var(--brand-navy);
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            margin-left: 15px;
+        }
+
+        /* Main Container & Card */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .styled-form {
+            background-color: var(--brand-white);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(10, 36, 114, 0.06);
+            padding: 40px;
+            border-top: 6px solid var(--brand-crimson);
+        }
+
+        /* Form Header */
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .edit-badge {
+            display: inline-block;
+            background-color: #fff0f0;
+            color: var(--brand-crimson);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .form-header h1 {
+            color: var(--brand-navy);
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .qid-display {
+            background-color: rgba(10, 36, 114, 0.08);
+            color: var(--brand-navy);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: Consolas, monospace;
+            font-weight: 700;
+        }
+
+        /* Form Sections */
+        .form-section {
+            margin-bottom: 35px;
+            background-color: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--brand-navy);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* Inputs & Labels */
+        .form-label {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background-color: var(--brand-white);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brand-navy);
+            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
+            outline: none;
+        }
+
+        .font-monospace {
+            font-family: Consolas, Monaco, 'Courier New', monospace !important;
+            font-size: 0.9rem;
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        .font-monospace:focus {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        /* Test Case Container */
+        .test-case-item {
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--brand-crimson);
+            background-color: var(--brand-white);
+        }
+
+        /* Buttons */
+        .btn-custom-navy {
+            background-color: var(--brand-navy);
+            color: var(--brand-white);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-navy:hover {
+            background-color: #071952;
+            color: var(--brand-white);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn {
+            background-color: var(--brand-crimson);
+            color: var(--brand-white);
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(116, 15, 40, 0.2);
+        }
+
+        .submit-btn:hover {
+            background-color: #5a0b1f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(116, 15, 40, 0.3);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .styled-form {
+                padding: 25px 20px;
+            }
+            .form-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="/admin/total-questions" class="back-link" title="Back to Questions">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+                
+                <a href="/admin" class="brand-wrapper">
+                    <img src="https://www.book-buddy.in/static/img/logo/logo_1.png" alt="Book Buddy" onerror="this.style.display='none'">
+                    <h2 class="brand-name d-none d-sm-block">BOOK BUDDY</h2>
+                </a>
+                <span class="admin-badge d-none d-md-inline-block">EDITOR</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="styled-form">
+            
+            <header class="form-header">
+                <span class="edit-badge">Edit Mode</span>
+                <h1>Update Challenge</h1>
+                <p class="text-muted mt-2">Modifying Question ID: <span class="qid-display">{{ questions.question_id }}</span></p>
+            </header>
+
+            <form action="/new_question" method="post">
+                <input type="hidden" name="question_id" value="{{ questions.question_id }}">
+                
+                <div class="form-section">
+                    <h3 class="section-title">General Information</h3>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Question Title</label>
+                            <input type="text" name="title" class="form-control" value="{{ questions.title }}" required placeholder="e.g. Array Summation">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Difficulty Level</label>
+                            <select name="difficulty" class="form-select" required>
+                                <option value="Easy" {% if questions.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                                <option value="Medium" {% if questions.difficulty == 'Medium' %}selected{% endif %}>Medium</option>
+                                <option value="Hard" {% if questions.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+                                <option value="Creativity" {% if questions.difficulty == 'Creativity' %}selected{% endif %}>Creativity</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Problem Description</label>
+                        <textarea name="description" class="form-control" rows="5" required>{{ questions.description }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Technical Specifications</h3>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Input Format</label>
+                            <textarea name="input_format" class="form-control font-monospace" rows="3" required>{{ questions.input_format }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Output Format</label>
+                            <textarea name="output_format" class="form-control font-monospace" rows="3" required>{{ questions.output_format }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Constraints</label>
+                            <textarea name="constraints" class="form-control font-monospace" rows="3" required>{{ questions.constraints }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Logic Explanation</label>
+                            <textarea name="explanation" class="form-control" rows="3" required>{{ questions.explanation }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                        <h3 class="section-title mb-0 border-0 pb-0">Test Cases</h3>
+                        <button type="button" class="btn btn-custom-navy btn-sm px-3" onclick="addTestCase()">+ Add Case</button>
+                    </div>
+
+                    <div id="test-cases-container">
+                        {% for case in questions.test_cases %}
+                        <div class="test-case-item rounded-3 p-4 mb-3 shadow-sm">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Input Data</label>
+                                    <textarea class="form-control font-monospace" name="test_inputs[]" rows="3" required>{{ case.input_data }}</textarea>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">Expected Output</label>
+                                    <textarea class="form-control font-monospace" name="test_outputs[]" rows="3" required>{{ case.expected_output }}</textarea>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-danger w-100 fw-semibold" onclick="removeTestCase(this)">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mt-5 text-center">
+                    <button type="submit" class="submit-btn">Update Question Details</button>
+                    <p class="text-muted small mt-3">Changes will be applied immediately to the challenge database.</p>
+                </div>
+                
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function addTestCase() {
+            const container = document.getElementById('test-cases-container');
+            const newCase = document.createElement('div');
+            // Using the exact same classes as the Jinja2 loop above
+            newCase.className = 'test-case-item rounded-3 p-4 mb-3 shadow-sm';
+            newCase.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Input Data</label>
+                        <textarea class="form-control font-monospace" name="test_inputs[]" rows="3" required></textarea>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Expected Output</label>
+                        <textarea class="form-control font-monospace" name="test_outputs[]" rows="3" required></textarea>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-danger w-100 fw-semibold" onclick="removeTestCase(this)">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newCase);
+            
+            // Smooth scroll to the new test case
+            newCase.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function removeTestCase(btn) {
+            const container = document.getElementById('test-cases-container');
+            if (container.children.length > 1) {
+                btn.closest('.test-case-item').remove();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cannot Remove',
+                    text: 'At least one test case is required for a valid challenge.',
+                    confirmButtonColor: '#0A2472'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
