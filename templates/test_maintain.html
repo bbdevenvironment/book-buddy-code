@@ -20,6 +20,12 @@
             --text-main: #334155;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
+            
+            /* Status Colors */
+            --status-live: #0ca678;
+            --status-upcoming: #f59e0b;
+            --status-completed: #64748b;
+            --status-draft: #dc2626;
         }
 
         body {
@@ -37,25 +43,9 @@
             margin-bottom: 30px;
         }
 
-        .brand-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .brand-wrapper img {
-            height: 40px;
-            object-fit: contain;
-        }
-
-        .brand-name {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--brand-navy);
-            letter-spacing: 0.5px;
-        }
+        .brand-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-wrapper img { height: 40px; object-fit: contain; }
+        .brand-name { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--brand-navy); letter-spacing: 0.5px; }
 
         .admin-badge {
             background-color: rgba(10, 36, 114, 0.1);
@@ -87,10 +77,7 @@
         }
 
         /* Sidebar Filters */
-        .sticky-sidebar {
-            position: sticky;
-            top: 100px;
-        }
+        .sticky-sidebar { position: sticky; top: 100px; }
 
         .filter-menu .nav-link {
             color: var(--text-muted);
@@ -104,140 +91,68 @@
             gap: 10px;
         }
 
-        .filter-menu .nav-link:hover {
-            background-color: #f1f5f9;
-            color: var(--brand-navy);
-        }
-
-        .filter-menu .nav-link.active {
-            background-color: var(--brand-navy);
-            color: var(--brand-white);
-            box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2);
-        }
+        .filter-menu .nav-link:hover { background-color: #f1f5f9; color: var(--brand-navy); }
+        .filter-menu .nav-link.active { background-color: var(--brand-navy); color: var(--brand-white); box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2); }
 
         /* Test Card Styling */
         .test-card {
             border: none;
             border-radius: 16px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-top 0.3s;
             background-color: var(--brand-white);
             height: 100%;
             display: flex;
             flex-direction: column;
+            border-top: 4px solid transparent; /* Placeholder for JS Border updates */
         }
 
-        .test-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-        }
+        .test-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); }
+
+        /* Dynamic Border Classes */
+        .status-border-live { border-top-color: var(--status-live) !important; }
+        .status-border-upcoming { border-top-color: var(--status-upcoming) !important; }
+        .status-border-completed { border-top-color: var(--status-completed) !important; }
+        .status-border-draft { border-top-color: var(--status-draft) !important; }
 
         /* Status Badges */
-        .badge-live { background: #e6fcf5; color: #0ca678; border: 1px solid #0ca678; font-weight: 700; }
-        .badge-upcoming { background: #fff8e6; color: #f59e0b; border: 1px solid #f59e0b; font-weight: 700; }
-        .badge-completed { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; font-weight: 700; }
+        .badge-live { background: #e6fcf5; color: var(--status-live); border: 1px solid var(--status-live); font-weight: 700; }
+        .badge-upcoming { background: #fff8e6; color: var(--status-upcoming); border: 1px solid var(--status-upcoming); font-weight: 700; }
+        .badge-completed { background: #f1f5f9; color: var(--status-completed); border: 1px solid #cbd5e1; font-weight: 700; }
         .badge-draft { background: #fff0f0; color: var(--brand-crimson); border: 1px solid var(--brand-crimson); font-weight: 700; }
 
         /* Question List UI */
-        .question-list-wrapper {
-            max-height: 250px; 
-            overflow-y: auto;
-            padding-right: 5px;
-            margin-bottom: 20px;
-        }
-
+        .question-list-wrapper { max-height: 250px; overflow-y: auto; padding-right: 5px; margin-bottom: 20px; }
         .question-list-wrapper::-webkit-scrollbar { width: 6px; }
         .question-list-wrapper::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .question-list-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
         .assigned-q-item {
-            background-color: var(--brand-white);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: var(--brand-white); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 12px 16px; margin-bottom: 10px;
+            transition: all 0.2s ease-in-out; display: flex; justify-content: space-between; align-items: center;
         }
-
         .assigned-q-item:last-child { margin-bottom: 0; }
-        .assigned-q-item:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(10, 36, 114, 0.05);
-            transform: translateX(4px); 
-        }
+        .assigned-q-item:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(10, 36, 114, 0.05); transform: translateX(4px); }
 
         .q-icon-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 42px;
-            height: 42px;
-            background-color: rgba(10, 36, 114, 0.05);
-            color: var(--brand-navy);
-            border-radius: 10px;
-            font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
+            background-color: rgba(10, 36, 114, 0.05); color: var(--brand-navy); border-radius: 10px; font-size: 1.2rem;
         }
 
         .btn-remove-q {
-            color: #94a3b8;
-            background: none;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
+            color: #94a3b8; background: none; border: none; width: 35px; height: 35px;
+            border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none;
         }
-
-        .btn-remove-q:hover {
-            color: var(--brand-crimson);
-            background-color: rgba(116, 15, 40, 0.1);
-        }
+        .btn-remove-q:hover { color: var(--brand-crimson); background-color: rgba(116, 15, 40, 0.1); }
 
         /* Buttons */
-        .btn-custom-navy {
-            background-color: var(--brand-navy);
-            color: var(--brand-white);
-            border: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-custom-navy:hover {
-            background-color: #071952;
-            color: var(--brand-white);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2);
-        }
-
-        .btn-outline-navy {
-            color: var(--brand-navy);
-            border: 1px solid var(--brand-navy);
-            font-weight: 600;
-            transition: all 0.2s;
-            background-color: transparent;
-        }
-
-        .btn-outline-navy:hover {
-            background-color: var(--brand-navy);
-            color: var(--brand-white);
-        }
-
-        .modal-header-navy {
-            background-color: var(--brand-navy);
-            color: var(--brand-white);
-            border-bottom: none;
-        }
-
-        .btn-close-white {
-            filter: invert(1) grayscale(100%) brightness(200%);
-        }
+        .btn-custom-navy { background-color: var(--brand-navy); color: var(--brand-white); border: none; font-weight: 600; transition: all 0.3s; }
+        .btn-custom-navy:hover { background-color: #071952; color: var(--brand-white); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2); }
+        .btn-outline-navy { color: var(--brand-navy); border: 1px solid var(--brand-navy); font-weight: 600; transition: all 0.2s; background-color: transparent; }
+        .btn-outline-navy:hover { background-color: var(--brand-navy); color: var(--brand-white); }
+        .modal-header-navy { background-color: var(--brand-navy); color: var(--brand-white); border-bottom: none; }
+        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
     </style>
 </head>
 
@@ -305,16 +220,17 @@
                     {% for title, entries in grouped_tests.items() %}
                     {% set first_entry = entries[0] %}
                     
-                    <input type="hidden" id="start-{{ loop.index }}" value="{{ first_entry.start_time.isoformat() if first_entry.start_time else '' }}">
-                    <input type="hidden" id="end-{{ loop.index }}" value="{{ first_entry.end_time.isoformat() if first_entry.end_time else '' }}">
+                    <input type="hidden" id="start-{{ loop.index }}" value="{{ first_entry.start_time.strftime('%Y-%m-%dT%H:%M:%S') if first_entry.start_time else '' }}">
+                    <input type="hidden" id="end-{{ loop.index }}" value="{{ first_entry.end_time.strftime('%Y-%m-%dT%H:%M:%S') if first_entry.end_time else '' }}">
+
                     <div class="col-md-6 test-card-col" id="test-col-{{ loop.index }}">
-                        <div class="card test-card">
+                        <div class="card test-card" id="card-{{ loop.index }}">
                             <div class="card-body p-4 d-flex flex-column h-100">
                                 
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
                                         <div id="badge-container-{{ loop.index }}" class="mb-2">
-                                            <span class="badge badge-draft">Loading Status...</span>
+                                            <span class="badge badge-draft px-3 py-2">Loading Status...</span>
                                         </div>
                                         <h4 class="fw-bold mb-1" style="color: var(--brand-navy);">{{ title }}</h4>
                                     </div>
@@ -345,8 +261,8 @@
                                     <div class="text-muted small mb-1">
                                         <i class="bi bi-clock-history me-1"></i>
                                         {% if first_entry.start_time %}
-                                            <span id="display-start-{{ loop.index }}">{{ first_entry.start_time.strftime('%b %d, %I:%M %p') }}</span> - 
-                                            <span id="display-end-{{ loop.index }}">{{ first_entry.end_time.strftime('%I:%M %p') }}</span>
+                                            <span>{{ first_entry.start_time.strftime('%b %d, %I:%M %p') }}</span> - 
+                                            <span>{{ first_entry.end_time.strftime('%I:%M %p') }}</span>
                                         {% else %}
                                             <span class="text-danger fw-bold">Draft: Schedule Not Set</span>
                                         {% endif %}
@@ -401,18 +317,18 @@
                                         <i class="bi bi-info-circle-fill fs-4 mt-1"></i>
                                         <div>
                                             <strong>Automatic Status Active</strong><br>
-                                            Simply set the dates below. The test will automatically transition from <em>Upcoming → Live → Completed</em> based on the current time. If dates are empty, it will remain a Draft.
+                                            Simply set the dates below. The test will automatically transition from <em>Upcoming → Live → Completed</em> based on the current time. If dates are empty, it stays Draft.
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
                                         <label class="form-label fw-bold" style="color: var(--brand-navy);">Start Date & Time</label>
-                                        <input type="datetime-local" id="modal-start-{{ loop.index }}" name="start_time" class="form-control bg-light" 
+                                        <input type="datetime-local" name="start_time" class="form-control bg-light" 
                                                value="{{ first_entry.start_time.strftime('%Y-%m-%dT%H:%M') if first_entry.start_time }}" required>
                                     </div>
                                     <div class="mb-4">
                                         <label class="form-label fw-bold" style="color: var(--brand-navy);">End Date & Time</label>
-                                        <input type="datetime-local" id="modal-end-{{ loop.index }}" name="end_time" class="form-control bg-light" 
+                                        <input type="datetime-local" name="end_time" class="form-control bg-light" 
                                                value="{{ first_entry.end_time.strftime('%Y-%m-%dT%H:%M') if first_entry.end_time }}" required>
                                     </div>
                                     
@@ -443,7 +359,7 @@
     <script>
         let currentFilter = 'all';
 
-        // Sidebar Filter Logic
+        // 1. Sidebar Filter Logic
         function setFilter(filterType, btnElement) {
             currentFilter = filterType;
             
@@ -455,7 +371,7 @@
             updateTestStatuses();
         }
 
-        // Automatic Status Calculation purely based on dates
+        // 2. Automatic Status Calculation based on Dates
         function updateTestStatuses() {
             const cardsCount = document.querySelectorAll('[id^="badge-container-"]').length;
             const now = new Date(); 
@@ -464,17 +380,21 @@
             for(let i = 1; i <= cardsCount; i++) {
                 const startStr = document.getElementById(`start-${i}`).value;
                 const endStr = document.getElementById(`end-${i}`).value;
+                
                 const badgeContainer = document.getElementById(`badge-container-${i}`);
                 const resultsBtn = document.getElementById(`results-btn-${i}`);
                 const cardCol = document.getElementById(`test-col-${i}`);
+                const cardUI = document.getElementById(`card-${i}`);
 
                 let badgeHTML = '';
                 let calculatedCategory = '';
+                let borderClass = '';
 
                 // Logic: No dates = Draft. Has Dates = Calculate relative to NOW.
                 if (!startStr || !endStr) {
-                    badgeHTML = `<span class="badge badge-draft px-3 py-2">DRAFT</span>`;
+                    badgeHTML = `<span class="badge badge-draft px-3 py-2">DRAFT (Hidden)</span>`;
                     calculatedCategory = 'draft';
+                    borderClass = 'status-border-draft';
                     if(resultsBtn) resultsBtn.style.display = 'none';
                 } 
                 else {
@@ -483,23 +403,29 @@
 
                     if (now < startTime) {
                         badgeHTML = `<span class="badge badge-upcoming px-3 py-2"><i class="bi bi-calendar-event me-1"></i> UPCOMING</span>`;
-                        calculatedCategory = 'live'; 
+                        calculatedCategory = 'live'; // Grouped in live/upcoming filter
+                        borderClass = 'status-border-upcoming';
                         if(resultsBtn) resultsBtn.style.display = 'none';
                     } 
                     else if (now >= startTime && now <= endTime) {
-                        badgeHTML = `<span class="badge badge-live px-3 py-2"><span class="spinner-grow spinner-grow-sm me-2 text-success" role="status"></span> LIVE NOW</span>`;
+                        badgeHTML = `<span class="badge badge-live px-3 py-2"><span class="spinner-grow spinner-grow-sm me-2" role="status" style="width: 10px; height: 10px;"></span> LIVE NOW</span>`;
                         calculatedCategory = 'live';
+                        borderClass = 'status-border-live';
                         if(resultsBtn) resultsBtn.style.display = 'none'; 
                     } 
                     else if (now > endTime) {
                         badgeHTML = `<span class="badge badge-completed px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> COMPLETED</span>`;
                         calculatedCategory = 'completed';
+                        borderClass = 'status-border-completed';
                         if(resultsBtn) resultsBtn.style.display = 'block'; 
                     }
                 }
 
+                // Apply UI Updates
                 badgeContainer.innerHTML = badgeHTML;
+                cardUI.className = `card test-card ${borderClass}`;
 
+                // Apply Filter Display
                 if (currentFilter === 'all' || calculatedCategory === currentFilter) {
                     cardCol.style.display = 'block';
                     visibleCount++;
@@ -508,6 +434,7 @@
                 }
             }
 
+            // Show Empty State if no cards match filter
             const emptyState = document.getElementById('empty-filter-state');
             if (visibleCount === 0 && cardsCount > 0) {
                 emptyState.style.display = 'block';
@@ -516,10 +443,10 @@
             }
         }
 
-        // Run immediately on load
+        // Run immediately on load, then every 10 seconds
         document.addEventListener("DOMContentLoaded", function() {
             updateTestStatuses();
-            setInterval(updateTestStatuses, 30000); 
+            setInterval(updateTestStatuses, 10000); 
         });
 
         // Safe Delete Popups
