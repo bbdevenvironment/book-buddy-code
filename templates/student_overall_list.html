@@ -37,223 +37,62 @@
             margin-bottom: 40px;
         }
 
-        .brand-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .brand-wrapper img {
-            height: 40px;
-            object-fit: contain;
-        }
-
-        .brand-name {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--brand-navy);
-            letter-spacing: 0.5px;
-        }
+        .brand-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-wrapper img { height: 40px; object-fit: contain; }
+        .brand-name { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--brand-navy); letter-spacing: 0.5px; }
 
         .admin-badge {
-            background-color: rgba(10, 36, 114, 0.1);
-            color: var(--brand-navy);
-            font-weight: 700;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            margin-left: 10px;
+            background-color: rgba(10, 36, 114, 0.1); color: var(--brand-navy); font-weight: 700;
+            padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; letter-spacing: 0.5px; margin-left: 10px;
         }
 
         .back-link {
-            color: var(--text-muted);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            border-radius: 50%;
-            background-color: #f1f5f9;
-            text-decoration: none;
-            margin-right: 15px;
+            color: var(--text-muted); transition: all 0.2s; display: flex; align-items: center;
+            justify-content: center; padding: 8px; border-radius: 50%; background-color: #f1f5f9; text-decoration: none; margin-right: 15px;
         }
-
-        .back-link:hover {
-            color: var(--brand-crimson);
-            background-color: #fce7ec;
-        }
+        .back-link:hover { color: var(--brand-crimson); background-color: #fce7ec; }
 
         /* Header & Stats */
-        .page-title {
-            color: var(--brand-navy);
-            font-weight: 800;
-        }
-
+        .page-title { color: var(--brand-navy); font-weight: 800; }
         .stats-badge {
-            display: inline-flex;
-            align-items: center;
-            background-color: #e0e7ff;
-            color: #3730a3;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            display: inline-flex; align-items: center; background-color: #e0e7ff; color: #3730a3;
+            padding: 8px 16px; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
         }
 
         /* Search Bar */
-        .search-wrapper {
-            position: relative;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .search-wrapper i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
+        .search-wrapper { position: relative; max-width: 400px; width: 100%; }
+        .search-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .search-wrapper input {
-            width: 100%;
-            padding: 12px 16px 12px 45px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            background-color: var(--brand-white);
+            width: 100%; padding: 12px 16px 12px 45px; border-radius: 8px; border: 1px solid var(--border-color);
+            font-size: 0.95rem; transition: all 0.2s; background-color: var(--brand-white);
         }
-
-        .search-wrapper input:focus {
-            outline: none;
-            border-color: var(--brand-navy);
-            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
-        }
+        .search-wrapper input:focus { outline: none; border-color: var(--brand-navy); box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1); }
 
         /* Table Card */
-        .table-card {
-            background: var(--brand-white);
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        .custom-table {
-            width: 100%;
-            margin-bottom: 0;
-            border-collapse: collapse;
-        }
-
-        .custom-table th {
-            background-color: #f8fafc;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            padding: 16px;
-            border-bottom: 2px solid var(--border-color);
-            letter-spacing: 0.5px;
-        }
-
-        .custom-table td {
-            padding: 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .custom-table tbody tr:hover {
-            background-color: #f8fafc;
-        }
+        .table-card { background: var(--brand-white); border-radius: 16px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04); border: 1px solid var(--border-color); overflow: hidden; }
+        .custom-table { width: 100%; margin-bottom: 0; border-collapse: collapse; }
+        .custom-table th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; padding: 16px; border-bottom: 2px solid var(--border-color); letter-spacing: 0.5px; }
+        .custom-table td { padding: 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+        .custom-table tbody tr:hover { background-color: #f8fafc; }
 
         /* Table Components */
-        .student-meta {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .name-box {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, var(--brand-navy), #1e40af);
-            color: var(--brand-white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(10,36,114,0.3);
-        }
-
-        .reg-no {
-            font-family: Consolas, monospace;
-            background-color: rgba(10, 36, 114, 0.08);
-            color: var(--brand-navy);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .dept-tag {
-            background-color: #f1f5f9;
-            color: var(--text-main);
-            border: 1px solid #cbd5e1;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .contact-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .contact-stack i {
-            color: var(--brand-navy);
-            width: 16px;
-            text-align: center;
-        }
-
-        .col-truncate {
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .student-meta { display: flex; align-items: center; gap: 15px; }
+        .name-box { width: 42px; height: 42px; background: linear-gradient(135deg, var(--brand-navy), #1e40af); color: var(--brand-white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; box-shadow: 0 2px 5px rgba(10,36,114,0.3); }
+        .reg-no { font-family: Consolas, monospace; background-color: rgba(10, 36, 114, 0.08); color: var(--brand-navy); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+        .dept-tag { background-color: #f1f5f9; color: var(--text-main); border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .contact-stack { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--text-muted); }
+        .contact-stack i { color: var(--brand-navy); width: 16px; text-align: center; }
+        .col-truncate { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* Actions */
-        .btn-remove {
-            color: #ef4444;
-            background-color: #fef2f2;
-            border: 1px solid #fca5a5;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .btn-remove { color: #ef4444; background-color: #fef2f2; border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-remove:hover { background-color: #ef4444; color: white; }
 
-        .btn-remove:hover {
-            background-color: #ef4444;
-            color: white;
-        }
-
+        /* Custom Button */
+        .btn-custom-navy { background-color: var(--brand-navy); color: var(--brand-white); border: none; transition: all 0.3s; }
+        .btn-custom-navy:hover { background-color: #071952; color: var(--brand-white); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2); }
+        .modal-header-navy { background-color: var(--brand-navy); color: var(--brand-white); }
+        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
     </style>
 </head>
 
@@ -286,14 +125,33 @@
 
     <main class="container">
         
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% set alert_class = 'success' if category == 'success' else 'danger' %}
+                    <div class="alert alert-{{ alert_class }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        <i class="bi {% if category == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
             <div>
                 <h1 class="page-title h2 mb-1">Student Directory</h1>
                 <p class="text-muted mb-0">Manage and review all approved student accounts across departments.</p>
             </div>
-            <div class="stats-badge">
-                <i class="bi bi-people-fill me-2"></i>
-                <strong>{{ students|selectattr('approval')|list|length }}</strong> &nbsp;Active Students
+            
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-custom-navy py-2 px-3 rounded-3 fw-bold" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-cloud-upload-fill me-2"></i>Bulk Import CSV
+                </button>
+                <div class="stats-badge">
+                    <i class="bi bi-people-fill me-2"></i>
+                    <strong>{{ students|selectattr('approval')|list|length }}</strong> &nbsp;Active Students
+                </div>
             </div>
         </header>
 
@@ -369,6 +227,35 @@
         </div>
     </main>
 
+    <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <form action="{{ url_for('import_students') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-header modal-header-navy">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Bulk Import Students</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert bg-light border text-muted small mb-4">
+                            <strong><i class="bi bi-info-circle-fill me-1"></i> Format Requirements:</strong>
+                            Please upload a <b>.csv</b> (Comma Separated Values) file. Your CSV file MUST contain these exact column headers in the first row:<br><br>
+                            <code class="text-dark fw-bold bg-white p-1 border rounded">name, register, username, password, department, batch, collage, phone_no, email</code>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="color: var(--brand-navy);">Select CSV File</label>
+                            <input class="form-control" type="file" name="student_csv" accept=".csv" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                        <button type="button" class="btn btn-light px-4 border" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-custom-navy px-4"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Upload Students</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -379,11 +266,8 @@
             const table = document.querySelector(".custom-table");
             const tr = table.getElementsByTagName("tr");
 
-            // Loop through all table rows (starting from 1 to skip header)
             for (let i = 1; i < tr.length; i++) {
                 const row = tr[i];
-                
-                // Skip the "Empty state" row if it's visible
                 if (row.getElementsByTagName("td").length === 1) continue;
 
                 const textContent = row.textContent.toLowerCase();
@@ -398,19 +282,18 @@
 
         // SweetAlert2 Confirmation for Removing a Student
         function confirmRemove(e, url) {
-            e.preventDefault(); // Stop default link action
-            
+            e.preventDefault(); 
             Swal.fire({
                 title: 'Remove Student?',
                 text: "This will revoke their access to the platform. You cannot undo this.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#740f28', // Brand Crimson
+                confirmButtonColor: '#740f28',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, remove them'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = url; // Proceed if confirmed
+                    window.location.href = url; 
                 }
             });
         }

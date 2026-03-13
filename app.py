@@ -11,6 +11,9 @@ import sys
 import traceback
 import tempfile
 from sqlalchemy.exc import IntegrityError 
+import csv
+import io
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pro_secret_key_99'
@@ -323,6 +326,81 @@ def student_approval(id):
 def delete_student_stay(id):
     db.session.delete(Student.query.get_or_404(id)); db.session.commit()
     return redirect(url_for('student_overall_list'))
+
+
+
+@app.route('/admin/import_students', methods=['POST'])
+@login_required
+def import_students():
+    # 1. Validate File Exists
+    if 'student_csv' not in request.files:
+        flash("No file was uploaded.", "danger")
+        return redirect(url_for('student_overall_list'))
+
+    file = request.files['student_csv']
+    
+    if file.filename == '':
+        flash("No file was selected.", "danger")
+        return redirect(url_for('student_overall_list'))
+
+    if file and file.filename.endswith('.csv'):
+        try:
+            # 2. Read the CSV File stream
+            stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+            csv_input = csv.DictReader(stream)
+
+            success_count = 0
+            error_count = 0
+
+            # 3. Iterate through rows and insert
+            for row in csv_input:
+                try:
+                    # Clean up whitespace from the CSV columns
+                    row = {k.strip().lower(): v.strip() for k, v in row.items() if k}
+                    
+                    # Ensure username is unique to prevent DB crash
+                    existing_user = Student.query.filter_by(username=row.get('username')).first()
+                    if existing_user:
+                        error_count += 1
+                        continue # Skip existing usernames
+
+                    # Auto-Approve the student since the admin is adding them
+                    new_student = Student(
+                        name=row.get('name', ''),
+                        register=row.get('register', ''),
+                        username=row.get('username', ''),
+                        set_password=row.get('password', ''),
+                        verify_password=row.get('password', ''),
+                        department=row.get('department', ''),
+                        batch=row.get('batch', ''),
+                        collage=row.get('collage', ''),
+                        phone_no=row.get('phone_no', ''),
+                        email=row.get('email', ''),
+                        approval=True  
+                    )
+                    db.session.add(new_student)
+                    success_count += 1
+                    
+                except Exception as row_error:
+                    print(f"Row Error: {row_error}")
+                    error_count += 1
+
+            # Commit all the new students to the Database
+            db.session.commit()
+            
+            if success_count > 0:
+                flash(f"Success! Imported {success_count} students. (Skipped {error_count} duplicates/errors)", "success")
+            else:
+                flash("No students were imported. Ensure headers match the template.", "danger")
+                
+        except Exception as e:
+            flash(f"Failed to read CSV format. Error: {str(e)}", "danger")
+    else:
+        flash("Invalid file type. Please upload a .csv file.", "danger")
+
+    return redirect(url_for('student_overall_list'))
+
+
 
 @app.route('/admin/delete_student/<int:id>')
 @login_required
