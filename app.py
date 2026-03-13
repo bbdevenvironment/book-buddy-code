@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import subprocess, uuid, os
 from flask_migrate import Migrate
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from collections import defaultdict
 import json
 import io
@@ -29,6 +29,18 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 migrate = Migrate(app, db)
 login_manager.login_view = 'student_login'
+
+# ==================== TIMEZONE HELPER (IST - CHENNAI) ====================
+IST_TZ = timezone(timedelta(hours=5, minutes=30), 'IST')
+
+def ist_now():
+    """Forces the application to use exact Indian Standard Time (Chennai)."""
+    return datetime.now(IST_TZ).replace(tzinfo=None)
+
+@app.context_processor
+def inject_now():
+    """Injects IST time into all HTML templates automatically"""
+    return {'now': ist_now()}
 
 # ==================== DATABASE MODELS ====================
 
@@ -77,7 +89,7 @@ class Testmaintain(db.Model):
 
     @property
     def is_currently_live(self):
-        now = datetime.now()
+        now = ist_now()
         if self.start_time and self.end_time and self.status == 'live':
             return self.start_time <= now <= self.end_time
         return False
@@ -85,7 +97,7 @@ class Testmaintain(db.Model):
 class Student(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    register = db.Column(db.String(50))
+    register = db.Column(db.String(50)) # String prevents postgres crashing on alphanumeric IDs
     username = db.Column(db.String(15), unique=True) 
     set_password = db.Column(db.String(100))
     verify_password = db.Column(db.String(100))
@@ -102,7 +114,7 @@ class Submission(db.Model):
     code = db.Column(db.Text, nullable=False)
     language = db.Column(db.String(20))
     status = db.Column(db.String(20))
-    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    timestamp = db.Column(db.DateTime, default=ist_now) # Forced IST
     marks_obtained = db.Column(db.Integer, default=0)
     total_marks = db.Column(db.Integer, default=0)
     test_cases_passed = db.Column(db.Integer, default=0)
@@ -124,9 +136,9 @@ class TestResult(db.Model):
     total_marks_possible = db.Column(db.Integer, default=0)
     percentage = db.Column(db.Float, default=0)
     status = db.Column(db.String(20), default='attempted')
-    entry_time = db.Column(db.DateTime, default=db.func.current_timestamp())
+    entry_time = db.Column(db.DateTime, default=ist_now) # Forced IST
     exit_time = db.Column(db.DateTime)
-    submitted_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    submitted_at = db.Column(db.DateTime, default=ist_now) # Forced IST
     
     student = db.relationship('Student', backref='test_results')
     test = db.relationship('Testmaintain', backref='results')
@@ -193,7 +205,7 @@ def student_problem_view(id):
 def student_test(id):
     student = Student.query.get_or_404(id)
     all_entries = Testmaintain.query.all()
-    current_time = datetime.now()
+    current_time = ist_now()
     grouped_tests = defaultdict(list)
     questions_dict = {q.id: q for q in Question.query.all()}
     for entry in all_entries:
@@ -323,10 +335,6 @@ def every_question():
     questions = Question.query.all()
     return render_template('total_question.html', questions=questions)
 
-@app.context_processor
-def inject_now():
-    return {'now': datetime.now()}
-
 @app.route('/create_test', methods=['GET', 'POST'])
 def create_test():
     return render_template('create_test.html', questions=Question.query.all(), tests=Testmaintain.query.all())
@@ -349,7 +357,7 @@ def add_test():
 @app.route('/test_maintain')
 def test_maintain():
     all_entries = Testmaintain.query.all()
-    now = datetime.now()
+    now = ist_now()
     for entry in all_entries:
         if entry.status == 'live' and entry.end_time and now > entry.end_time:
             entry.status = 'completed'
@@ -384,7 +392,7 @@ def contact():
     return render_template('contact.html')
 
 
-
+# ==================== REGISTRATION ROUTE (FIXED) ====================
 @app.route('/request_student', methods=['GET','POST'])
 def request_student():
     if request.method == 'POST':
@@ -408,17 +416,20 @@ def request_student():
             return redirect(url_for('home'))
             
         except IntegrityError:
-            # Catches duplicate usernames
+            # Catches duplicate usernames or register numbers
             db.session.rollback()
-            flash("Username already exists. Please choose a different username.", "danger")
+            flash("Username or details already exist. Please choose a different username.", "danger")
             
         except Exception as e:
-            # Catches missing columns, wrong data types, etc.
+            # Catches Database Schema mismatches (like missing columns in Postgres)
             db.session.rollback()
-            print(f"DATABASE ERROR: {str(e)}") # This will print to your deployment server logs so you can read it
-            flash("An error occurred while submitting your registration. Please try again.", "danger")
+            error_message = str(e)
+            print(f"================ DATABASE ERROR ================\n{error_message}\n================================================")
+            flash(f"Database Error: Failed to save. Please make sure your database is updated.", "danger")
             
     return render_template('request_student.html')
+
+
 @app.route('/admin/delete_msg/<int:id>')
 @login_required
 def delete_msg(id):
@@ -437,16 +448,22 @@ def take_test(title):
     test_entries = Testmaintain.query.filter_by(test_title=title).all()
     if not test_entries: return redirect(url_for('student_test', id=current_user.id))
     
-    # Record Entry Time for Tracking
-    res = TestResult.query.filter_by(test_id=test_entries[0].id, student_id=current_user.id).first()
-    if not res:
-        db.session.add(TestResult(student_id=current_user.id, test_id=test_entries[0].id, status='in_progress'))
-        db.session.commit()
+    test = test_entries[0]
+    now = ist_now()
+    
+    is_live = False
+    if test.start_time and test.end_time and test.start_time <= now <= test.end_time:
+        is_live = True
+    
+    # Record Entry Time for Tracking ONLY IF LIVE
+    if is_live:
+        res = TestResult.query.filter_by(test_id=test.id, student_id=current_user.id).first()
+        if not res:
+            db.session.add(TestResult(student_id=current_user.id, test_id=test.id, status='in_progress', entry_time=ist_now()))
+            db.session.commit()
 
     questions = Question.query.filter(Question.id.in_([e.question_id for e in test_entries])).all()
-    return render_template('take_test.html', test=test_entries[0], questions=questions, student=current_user)
-
-
+    return render_template('take_test.html', test=test, questions=questions, student=current_user)
 
 @app.route('/submit-test', methods=['POST'])
 @login_required
@@ -454,7 +471,6 @@ def submit_test():
     test_id = request.form.get('test_id')
     test_main = Testmaintain.query.get(test_id)
     
-    # Secure test lookup
     if not test_main:
         flash("Error locating test configuration.", "danger")
         return redirect(url_for('student_test', id=current_user.id))
@@ -462,9 +478,8 @@ def submit_test():
     test_questions = Testmaintain.query.filter_by(test_title=test_main.test_title).all()
     
     total_obtained = 0
-    total_possible = len(test_questions) * 10  # 10 marks per question
+    total_possible = len(test_questions) * 10 
     
-    # Store submission data for generating the text file report later
     report_data = []
     
     for entry in test_questions:
@@ -476,13 +491,11 @@ def submit_test():
             cases = TestCase.query.filter_by(question_root_id=q.id).all()
             passed = 0
             
-            # Check all test cases
             for tc in cases:
                 res = run_code_safe(code, lang, tc.input_data)
                 if res['success'] and res['output'].strip() == tc.expected_output.strip():
                     passed += 1
             
-            # Requested Logic: If AT LEAST ONE test case passes, full 10 marks. Else 0.
             q_marks = 10 if passed > 0 else 0
             
             sub = Submission(
@@ -495,38 +508,34 @@ def submit_test():
                 total_marks=10, 
                 test_cases_passed=passed, 
                 total_test_cases=len(cases), 
-                status='Accepted' if passed > 0 else 'Failed'
+                status='Accepted' if passed > 0 else 'Failed',
+                timestamp=ist_now() # Using IST
             )
             db.session.add(sub)
             total_obtained += q_marks
             
-            # Prepare data for physical text file
             report_data.append(f"Question: {q.title}\nLanguage: {lang}\nTest Cases Passed: {passed}/{len(cases)}\nMarks: {q_marks}/10\n---\nCode Submitted:\n{code[:500]}\n...\n\n")
 
-    # Update Database tracking records
     res_record = TestResult.query.filter_by(test_id=test_id, student_id=current_user.id).first()
     if res_record:
         res_record.total_marks_obtained = total_obtained
         res_record.total_marks_possible = total_possible
         res_record.percentage = (total_obtained / total_possible * 100) if total_possible > 0 else 0
         res_record.status = 'passed' if res_record.percentage >= 40 else 'failed'
-        res_record.exit_time = datetime.now()
+        res_record.exit_time = ist_now() # Using IST
+        res_record.submitted_at = ist_now() # Using IST
     
     db.session.commit()
     
-    # ==== FILE CREATION LOGIC ====
     try:
-        # Create a "results" folder in the main directory if it doesn't exist
         results_dir = os.path.join(os.getcwd(), 'results')
         os.makedirs(results_dir, exist_ok=True)
         
-        # Name format: TestTitle_StudentName_StudentID.txt
         safe_title = "".join(c for c in test_main.test_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
         safe_name = "".join(c for c in current_user.name if c.isalnum() or c in (' ', '-', '_')).rstrip()
         filename = f"{safe_title}_{safe_name}_{current_user.register}.txt".replace(" ", "_")
         filepath = os.path.join(results_dir, filename)
         
-        # Write the report data into the physical file
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(f"=== TEST RESULT REPORT ===\n")
             f.write(f"Student: {current_user.name} (Reg: {current_user.register})\n")
@@ -539,12 +548,8 @@ def submit_test():
                 f.write(text_block)
     except Exception as file_e:
         print(f"Failed to create physical result file: {str(file_e)}")
-        # We don't want to crash the whole app just because writing a file failed, so we pass
-    # ===============================
 
     return redirect(url_for('student_results', test_id=test_id))
-
-
 
 @app.route('/student-results/<int:test_id>')
 @login_required
@@ -561,7 +566,6 @@ def test_results(test_id):
     results = TestResult.query.filter_by(test_id=test_id).all()
     return render_template('admin_test_results.html', test=test, results=results)
 
-
 @app.route('/live-test/<string:title>')
 @login_required
 def live_test(title):
@@ -570,8 +574,6 @@ def live_test(title):
         return redirect(url_for('test_maintain'))
         
     test_ids = [t.id for t in test_group]
-    
-    # Get all submissions linked to any of the test IDs for this title
     submissions = Submission.query.filter(Submission.test_id.in_(test_ids)).all()
     student_results = {}
     
@@ -587,11 +589,9 @@ def live_test(title):
         
     return render_template('live_monitor.html', title=title, test_group=test_group, student_results=student_results)
 
-
 @app.route('/attendance_tracking', methods=['GET'])
 @login_required
 def attendance_tracking():
-    # 1. Get unique test titles for the dropdown
     tests = Testmaintain.query.with_entities(Testmaintain.test_title).distinct().all()
     test_titles = [t[0] for t in tests if t[0]]
     
@@ -616,18 +616,23 @@ def attendance_tracking():
         test_entries = Testmaintain.query.filter_by(test_title=selected_title).all()
         test_ids = [t.id for t in test_entries]
         
+        now = ist_now()
+        test_end = test_entries[0].end_time if test_entries and test_entries[0].end_time else now
+        
         if test_ids:
             for student in all_students:
-                # We only need ONE TestResult record per student per test title to know their status
-                # Since TestResult currently binds to a specific test_id, we check if they have ANY result in the list of test_ids
                 res = TestResult.query.filter(TestResult.student_id == student.id, TestResult.test_id.in_(test_ids)).first()
                 
                 if not res:
                     status = 'Absent'
                     stats['absent'] += 1
                 elif res.exit_time is None:
-                    status = 'In Progress'
-                    stats['live'] += 1
+                    if now > test_end:
+                        status = 'Did Not Submit'
+                        stats['absent'] += 1
+                    else:
+                        status = 'In Progress'
+                        stats['live'] += 1
                 else:
                     status = 'Completed'
                     stats['attended'] += 1
@@ -645,85 +650,77 @@ def attendance_tracking():
                            attendance_data=attendance_data,
                            stats=stats)
 
-
-
 @app.route('/run', methods=['POST'])
 def run_code():
     data = request.json
     return jsonify(run_code_safe(data.get('code'), data.get('language'), data.get('input')))
 
 def run_code_safe(code, language, input_data):
-    """Safe code execution using the OS temp directory to prevent Flask reloads"""
     uid = uuid.uuid4().hex
     res = {'success': False, 'output': '', 'error': ''}
     
-    # Get the computer's safe temporary directory
     temp_dir = tempfile.gettempdir()
     
     try:
         if language == "python":
-            # Save the file in the temp directory, NOT the project folder
             filename = os.path.join(temp_dir, f"{uid}.py")
-            
             with open(filename, "w", encoding='utf-8') as f: 
                 f.write(code)
-                
             p = subprocess.run(["python", filename], input=input_data, capture_output=True, text=True, timeout=5)
             res.update({'success': True, 'output': p.stdout, 'error': p.stderr})
-            
-            if os.path.exists(filename): 
-                os.remove(filename)
+            if os.path.exists(filename): os.remove(filename)
 
         elif language in ["c", "cpp"]:
             ext = ".c" if language == "c" else ".cpp"
             filename = os.path.join(temp_dir, f"{uid}{ext}")
             exe = os.path.join(temp_dir, f"{uid}.exe" if os.name == 'nt' else f"{uid}.out")
-            
             with open(filename, "w", encoding='utf-8') as f: 
                 f.write(code)
-            
             compiler = "gcc" if language == "c" else "g++"
             compile_process = subprocess.run([compiler, filename, "-o", exe], capture_output=True, text=True, timeout=10)
-            
             if compile_process.returncode == 0:
-                # Run the compiled executable
                 run_process = subprocess.run([exe], input=input_data, capture_output=True, text=True, timeout=5)
                 res.update({'success': True, 'output': run_process.stdout, 'error': run_process.stderr})
             else:
                 res['error'] = compile_process.stderr
-                
-            # Cleanup C/C++ files
             if os.path.exists(filename): os.remove(filename)
             if os.path.exists(exe): os.remove(exe)
 
         elif language == "java":
-            # Java requires the file name to match the public class (Main)
-            # So we create a unique temporary folder just for this run
             job_dir = os.path.join(temp_dir, uid)
             os.makedirs(job_dir, exist_ok=True)
             filename = os.path.join(job_dir, "Main.java")
-            
             with open(filename, "w", encoding='utf-8') as f: 
                 f.write(code)
-            
             compile_process = subprocess.run(["javac", filename], capture_output=True, text=True, timeout=10)
-            
             if compile_process.returncode == 0:
                 run_process = subprocess.run(["java", "-cp", job_dir, "Main"], input=input_data, capture_output=True, text=True, timeout=5)
                 res.update({'success': True, 'output': run_process.stdout, 'error': run_process.stderr})
             else:
                 res['error'] = compile_process.stderr
-                
-            # Cleanup Java files
             for file in os.listdir(job_dir):
                 os.remove(os.path.join(job_dir, file))
             os.rmdir(job_dir)
             
     except subprocess.TimeoutExpired:
-        res['error'] = "Time Limit Exceeded (Code took too long to run)"
+        res['error'] = "Time Limit Exceeded"
     except Exception as e: 
         res['error'] = str(e)
         
     return res
+
+# --- EMERGENCY DATABASE RESET ROUTE ---
+# Visit /admin/reset_db to rebuild the tables if Postgres crashes due to schema changes
+@app.route('/admin/reset_db')
+def reset_db():
+    db.drop_all()
+    db.create_all()
+    if not Student.query.filter_by(username='username').first():
+        db.session.add(Student(username='username', set_password='password', name='Default Student', approval=True))
+    if not User.query.filter_by(username='arun').first():
+        db.session.add(User(username='arun', password='arun123'))
+    db.session.commit()
+    return "Database has been completely reset and rebuilt with the latest columns."
+
 if __name__ == "__main__":
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=True, host='127.0.0.1', port=5000, use_reloader=False)
