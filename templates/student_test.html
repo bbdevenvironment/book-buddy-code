@@ -320,8 +320,9 @@
                 
                 {% for title, entries in grouped_tests.items() %}
                     {% set first_entry = entries[0] %}
-                    {% if first_entry.status in ['live', 'completed', 'scheduled'] or (first_entry.status == 'draft' and first_entry.start_time) %}
-                        {% set is_live = first_entry.status == 'live' and first_entry.start_time <= now <= first_entry.end_time %}
+                    
+                    {% if first_entry.start_time and first_entry.end_time %}
+                        {% set is_live = first_entry.start_time <= now and now <= first_entry.end_time %}
                         
                         {% if is_live %}
                         <div class="col-lg-6 col-xl-4">
@@ -342,7 +343,7 @@
                                             <i class="bi bi-calendar3"></i>
                                             <div class="info-text">
                                                 <small>Date</small>
-                                                <span>{{ first_entry.start_time.strftime('%d %b, %Y') if first_entry.start_time else 'TBD' }}</span>
+                                                <span>{{ first_entry.start_time.strftime('%d %b, %Y') }}</span>
                                             </div>
                                         </div>
                                         <div class="info-item">
@@ -383,7 +384,8 @@
 
                 {% for title, entries in grouped_tests.items() %}
                     {% set first_entry = entries[0] %}
-                    {% if first_entry.status in ['live', 'completed', 'scheduled'] or (first_entry.status == 'draft' and first_entry.start_time) %}
+                    
+                    {% if first_entry.start_time and first_entry.end_time %}
                         {% set is_upcoming = now < first_entry.start_time %}
                         
                         {% if is_upcoming %}
@@ -405,7 +407,7 @@
                                             <i class="bi bi-calendar3"></i>
                                             <div class="info-text">
                                                 <small>Date</small>
-                                                <span>{{ first_entry.start_time.strftime('%d %b, %Y') if first_entry.start_time else 'TBD' }}</span>
+                                                <span>{{ first_entry.start_time.strftime('%d %b, %Y') }}</span>
                                             </div>
                                         </div>
                                         <div class="info-item">
@@ -449,8 +451,9 @@
 
                 {% for title, entries in grouped_tests.items() %}
                     {% set first_entry = entries[0] %}
-                    {% if first_entry.status in ['live', 'completed', 'scheduled'] or (first_entry.status == 'draft' and first_entry.start_time) %}
-                        {% set is_completed = first_entry.status == 'completed' or now > first_entry.end_time %}
+                    
+                    {% if first_entry.start_time and first_entry.end_time %}
+                        {% set is_completed = now > first_entry.end_time or first_entry.status == 'completed' %}
                         
                         {% if is_completed %}
                         <div class="col-lg-6 col-xl-4">
@@ -471,7 +474,7 @@
                                             <i class="bi bi-calendar3"></i>
                                             <div class="info-text">
                                                 <small>Date</small>
-                                                <span>{{ first_entry.start_time.strftime('%d %b, %Y') if first_entry.start_time else 'TBD' }}</span>
+                                                <span>{{ first_entry.start_time.strftime('%d %b, %Y') }}</span>
                                             </div>
                                         </div>
                                         <div class="info-item">

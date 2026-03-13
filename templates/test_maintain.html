@@ -229,20 +229,6 @@
             color: var(--brand-white);
         }
 
-        /* Quick Schedule Button */
-        .btn-quick-schedule {
-            background-color: #e0e7ff;
-            color: #3730a3;
-            border: 1px dashed #3730a3;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn-quick-schedule:hover {
-            background-color: #c7d2fe;
-            color: #312e81;
-        }
-
         .modal-header-navy {
             background-color: var(--brand-navy);
             color: var(--brand-white);
@@ -321,8 +307,6 @@
                     
                     <input type="hidden" id="start-{{ loop.index }}" value="{{ first_entry.start_time.isoformat() if first_entry.start_time else '' }}">
                     <input type="hidden" id="end-{{ loop.index }}" value="{{ first_entry.end_time.isoformat() if first_entry.end_time else '' }}">
-                    <input type="hidden" id="status-{{ loop.index }}" value="{{ first_entry.status }}">
-
                     <div class="col-md-6 test-card-col" id="test-col-{{ loop.index }}">
                         <div class="card test-card">
                             <div class="card-body p-4 d-flex flex-column h-100">
@@ -364,7 +348,7 @@
                                             <span id="display-start-{{ loop.index }}">{{ first_entry.start_time.strftime('%b %d, %I:%M %p') }}</span> - 
                                             <span id="display-end-{{ loop.index }}">{{ first_entry.end_time.strftime('%I:%M %p') }}</span>
                                         {% else %}
-                                            <span class="text-danger">Schedule Not Configured</span>
+                                            <span class="text-danger fw-bold">Draft: Schedule Not Set</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -408,42 +392,36 @@
                         <div class="modal-dialog modal-dialog-centered">
                             <form action="{{ url_for('set_test_timing', title=title) }}" method="POST" class="modal-content border-0 shadow-lg">
                                 <div class="modal-header modal-header-navy">
-                                    <h5 class="modal-title fw-bold"><i class="bi bi-clock me-2"></i>Schedule Config</h5>
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-clock me-2"></i>Schedule Configuration</h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body p-4">
                                     
-                                    <div class="mb-4 text-center">
-                                        <button type="button" class="btn btn-quick-schedule w-100 py-2 rounded-3" onclick="setAutoSchedule('{{ loop.index }}')">
-                                            <i class="bi bi-lightning-charge-fill me-2"></i>Auto-Schedule: Today 5:00 PM - 6:30 PM
-                                        </button>
+                                    <div class="alert alert-primary py-3 small mb-4 border-0 d-flex gap-3" style="background-color: #e0e7ff; color: #3730a3;">
+                                        <i class="bi bi-info-circle-fill fs-4 mt-1"></i>
+                                        <div>
+                                            <strong>Automatic Status Active</strong><br>
+                                            Simply set the dates below. The test will automatically transition from <em>Upcoming → Live → Completed</em> based on the current time. If dates are empty, it will remain a Draft.
+                                        </div>
                                     </div>
 
-                                    <div class="mb-3">
+                                    <div class="mb-4">
                                         <label class="form-label fw-bold" style="color: var(--brand-navy);">Start Date & Time</label>
-                                        <input type="datetime-local" id="modal-start-{{ loop.index }}" name="start_time" class="form-control" 
+                                        <input type="datetime-local" id="modal-start-{{ loop.index }}" name="start_time" class="form-control bg-light" 
                                                value="{{ first_entry.start_time.strftime('%Y-%m-%dT%H:%M') if first_entry.start_time }}" required>
                                     </div>
                                     <div class="mb-4">
                                         <label class="form-label fw-bold" style="color: var(--brand-navy);">End Date & Time</label>
-                                        <input type="datetime-local" id="modal-end-{{ loop.index }}" name="end_time" class="form-control" 
+                                        <input type="datetime-local" id="modal-end-{{ loop.index }}" name="end_time" class="form-control bg-light" 
                                                value="{{ first_entry.end_time.strftime('%Y-%m-%dT%H:%M') if first_entry.end_time }}" required>
                                     </div>
-
-                                    <div class="mb-2">
-                                        <label class="form-label fw-bold text-muted small">Force Override Status (Optional)</label>
-                                        <select id="modal-status-{{ loop.index }}" name="status" class="form-select">
-                                            <option value="draft" {% if first_entry.status == 'draft' %}selected{% endif %}>Draft (Hidden)</option>
-                                            <option value="scheduled" {% if first_entry.status == 'scheduled' %}selected{% endif %}>Auto-Schedule (Recommended)</option>
-                                            <option value="live" {% if first_entry.status == 'live' %}selected{% endif %}>Force Live</option>
-                                            <option value="completed" {% if first_entry.status == 'completed' %}selected{% endif %}>Force Complete</option>
-                                        </select>
-                                    </div>
+                                    
+                                    <input type="hidden" name="status" value="scheduled">
 
                                 </div>
-                                <div class="modal-footer border-0 pt-0 px-4 pb-4">
-                                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-custom-navy px-4">Save Configuration</button>
+                                <div class="modal-footer border-0 pt-0 px-4 pb-4 d-flex justify-content-between">
+                                    <button type="button" class="btn btn-light px-4 border fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-custom-navy px-4 shadow-sm">Save Timings</button>
                                 </div>
                             </form>
                         </div>
@@ -465,54 +443,19 @@
     <script>
         let currentFilter = 'all';
 
-        // 1. Sidebar Filter Logic
+        // Sidebar Filter Logic
         function setFilter(filterType, btnElement) {
             currentFilter = filterType;
             
-            // Highlight active button
             document.querySelectorAll('#testFilters .nav-link').forEach(btn => {
                 btn.classList.remove('active');
             });
             btnElement.classList.add('active');
             
-            // Re-run status update to apply filter
             updateTestStatuses();
         }
 
-        // 2. Auto-Schedule (Today 5 PM to 6:30 PM)
-        function setAutoSchedule(index) {
-            const now = new Date();
-            
-            // Format current date as YYYY-MM-DD
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            
-            // Target the specific modal's inputs
-            const startInput = document.getElementById(`modal-start-${index}`);
-            const endInput = document.getElementById(`modal-end-${index}`);
-            const statusSelect = document.getElementById(`modal-status-${index}`);
-            
-            // Set values
-            startInput.value = `${dateStr}T17:00`;
-            endInput.value = `${dateStr}T18:30`;
-            
-            // Set status to scheduled so it processes correctly
-            statusSelect.value = "scheduled";
-
-            // Visual feedback using SweetAlert Toast
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Time set to Today, 5:00 PM - 6:30 PM',
-                showConfirmButton: false,
-                timer: 2000
-            });
-        }
-
-        // 3. Status Calculation and Filtering
+        // Automatic Status Calculation purely based on dates
         function updateTestStatuses() {
             const cardsCount = document.querySelectorAll('[id^="badge-container-"]').length;
             const now = new Date(); 
@@ -521,7 +464,6 @@
             for(let i = 1; i <= cardsCount; i++) {
                 const startStr = document.getElementById(`start-${i}`).value;
                 const endStr = document.getElementById(`end-${i}`).value;
-                const dbStatus = document.getElementById(`status-${i}`).value;
                 const badgeContainer = document.getElementById(`badge-container-${i}`);
                 const resultsBtn = document.getElementById(`results-btn-${i}`);
                 const cardCol = document.getElementById(`test-col-${i}`);
@@ -529,8 +471,8 @@
                 let badgeHTML = '';
                 let calculatedCategory = '';
 
-                // Calculate Status
-                if (dbStatus === 'draft' || !startStr || !endStr) {
+                // Logic: No dates = Draft. Has Dates = Calculate relative to NOW.
+                if (!startStr || !endStr) {
                     badgeHTML = `<span class="badge badge-draft px-3 py-2">DRAFT</span>`;
                     calculatedCategory = 'draft';
                     if(resultsBtn) resultsBtn.style.display = 'none';
@@ -541,7 +483,7 @@
 
                     if (now < startTime) {
                         badgeHTML = `<span class="badge badge-upcoming px-3 py-2"><i class="bi bi-calendar-event me-1"></i> UPCOMING</span>`;
-                        calculatedCategory = 'live'; // Grouped with live for filtering
+                        calculatedCategory = 'live'; 
                         if(resultsBtn) resultsBtn.style.display = 'none';
                     } 
                     else if (now >= startTime && now <= endTime) {
@@ -549,7 +491,7 @@
                         calculatedCategory = 'live';
                         if(resultsBtn) resultsBtn.style.display = 'none'; 
                     } 
-                    else if (now > endTime || dbStatus === 'completed') {
+                    else if (now > endTime) {
                         badgeHTML = `<span class="badge badge-completed px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> COMPLETED</span>`;
                         calculatedCategory = 'completed';
                         if(resultsBtn) resultsBtn.style.display = 'block'; 
@@ -558,7 +500,6 @@
 
                 badgeContainer.innerHTML = badgeHTML;
 
-                // Apply Sidebar Filter
                 if (currentFilter === 'all' || calculatedCategory === currentFilter) {
                     cardCol.style.display = 'block';
                     visibleCount++;
@@ -567,7 +508,6 @@
                 }
             }
 
-            // Show Empty State if no cards match filter
             const emptyState = document.getElementById('empty-filter-state');
             if (visibleCount === 0 && cardsCount > 0) {
                 emptyState.style.display = 'block';
@@ -579,7 +519,7 @@
         // Run immediately on load
         document.addEventListener("DOMContentLoaded", function() {
             updateTestStatuses();
-            setInterval(updateTestStatuses, 30000); // Re-check times every 30 seconds
+            setInterval(updateTestStatuses, 30000); 
         });
 
         // Safe Delete Popups
@@ -590,7 +530,7 @@
                 text: "This will permanently remove the test schedule and unassign all questions.",
                 icon: 'error',
                 showCancelButton: true,
-                confirmButtonColor: '#740f28', // Crimson
+                confirmButtonColor: '#740f28',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Delete it'
             }).then((result) => {
@@ -607,7 +547,7 @@
                 text: "Are you sure you want to remove this question from the test?",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#0A2472', // Navy
+                confirmButtonColor: '#0A2472',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Remove'
             }).then((result) => {

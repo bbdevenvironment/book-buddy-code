@@ -357,19 +357,6 @@ def test_maintain():
     for entry in all_entries: grouped_tests[entry.test_title].append(entry)
     return render_template('test_maintain.html', grouped_tests=grouped_tests, now=now)
 
-@app.route('/live-test/<string:title>')
-def live_test(title):
-    test_group = Testmaintain.query.filter_by(test_title=title).all()
-    if not test_group: return redirect(url_for('test_maintain'))
-    test_ids = [t.id for t in test_group]
-    submissions = Submission.query.filter(Submission.test_id.in_(test_ids)).all()
-    student_results = {}
-    for sub in submissions:
-        if sub.student_id not in student_results:
-            student_results[sub.student_id] = {'student': sub.student, 'total_marks': 0, 'submissions': []}
-        student_results[sub.student_id]['total_marks'] += sub.marks_obtained
-        student_results[sub.student_id]['submissions'].append(sub)
-    return render_template('live_monitor.html', title=title, test_group=test_group, student_results=student_results)
 
 @app.route('/delete-entire-test/<string:title>')
 def delete_entire_test(title):
@@ -545,15 +532,47 @@ def test_results(test_id):
     return render_template('admin_test_results.html', test=test, results=results)
 
 
+@app.route('/live-test/<string:title>')
+@login_required
+def live_test(title):
+    test_group = Testmaintain.query.filter_by(test_title=title).all()
+    if not test_group: 
+        return redirect(url_for('test_maintain'))
+        
+    test_ids = [t.id for t in test_group]
+    
+    # Get all submissions linked to any of the test IDs for this title
+    submissions = Submission.query.filter(Submission.test_id.in_(test_ids)).all()
+    student_results = {}
+    
+    for sub in submissions:
+        if sub.student_id not in student_results:
+            student_results[sub.student_id] = {
+                'student': sub.student, 
+                'total_marks': 0, 
+                'submissions': []
+            }
+        student_results[sub.student_id]['total_marks'] += sub.marks_obtained
+        student_results[sub.student_id]['submissions'].append(sub)
+        
+    return render_template('live_monitor.html', title=title, test_group=test_group, student_results=student_results)
+
+
 @app.route('/attendance_tracking', methods=['GET'])
 @login_required
 def attendance_tracking():
-    # Get all active tests for the dropdown
+    # 1. Get unique test titles for the dropdown
     tests = Testmaintain.query.with_entities(Testmaintain.test_title).distinct().all()
-    test_titles = [t[0] for t in tests]
+    test_titles = [t[0] for t in tests if t[0]]
     
-    # Get the selected test from the URL, or default to the first one
     selected_title = request.args.get('test_title')
+    test_id = request.args.get('test_id')
+    
+    if test_id and not selected_title:
+        test_obj = Testmaintain.query.get(test_id)
+        if test_obj:
+            selected_title = test_obj.test_title
+            
     if not selected_title and test_titles:
         selected_title = test_titles[0]
         
@@ -561,17 +580,17 @@ def attendance_tracking():
     stats = {'total': 0, 'attended': 0, 'absent': 0, 'live': 0}
     
     if selected_title:
-        # Get all approved students
         all_students = Student.query.filter_by(approval=True).all()
         stats['total'] = len(all_students)
         
-        # Get test ID for the selected title
-        test_entry = Testmaintain.query.filter_by(test_title=selected_title).first()
+        test_entries = Testmaintain.query.filter_by(test_title=selected_title).all()
+        test_ids = [t.id for t in test_entries]
         
-        if test_entry:
+        if test_ids:
             for student in all_students:
-                # Check if student has a TestResult record (meaning they started)
-                res = TestResult.query.filter_by(student_id=student.id, test_id=test_entry.id).first()
+                # We only need ONE TestResult record per student per test title to know their status
+                # Since TestResult currently binds to a specific test_id, we check if they have ANY result in the list of test_ids
+                res = TestResult.query.filter(TestResult.student_id == student.id, TestResult.test_id.in_(test_ids)).first()
                 
                 if not res:
                     status = 'Absent'
@@ -595,6 +614,8 @@ def attendance_tracking():
                            selected_title=selected_title, 
                            attendance_data=attendance_data,
                            stats=stats)
+
+
 
 @app.route('/run', methods=['POST'])
 def run_code():

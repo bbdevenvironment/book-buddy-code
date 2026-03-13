@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="10">
     <title>Live Attendance Tracking | BOOK BUDDY Admin</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -42,13 +44,17 @@
         .table td { padding: 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
 
         .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
-        .status-completed { background: #dcfce7; color: #166534; }
-        .status-absent { background: #fee2e2; color: #991b1b; }
-        .status-live { background: #e0f2fe; color: #075985; }
+        .status-completed { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;}
+        .status-absent { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;}
+        .status-live { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd;}
+        
         .pulse-dot { width: 8px; height: 8px; background-color: #0ea5e9; border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(14,165,233,0.7); } 70% { box-shadow: 0 0 0 6px rgba(14,165,233,0); } 100% { box-shadow: 0 0 0 0 rgba(14,165,233,0); } }
 
         .time-box { font-family: 'Fira Code', monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; color: var(--brand-navy); font-weight: 600; }
+        
+        .btn-filter.active-filter { box-shadow: inset 0 0 0 2px var(--brand-navy); font-weight: bold; }
+        .live-indicator { font-size: 0.8rem; color: #059669; font-weight: bold; display: flex; align-items: center; gap: 5px;}
     </style>
 </head>
 
@@ -63,13 +69,16 @@
                     <span class="admin-badge d-none d-md-inline-block">TRACKING</span>
                 </div>
             </div>
+            <div class="live-indicator">
+                <span class="pulse-dot" style="background-color: #059669;"></span> Live Connection
+            </div>
         </div>
     </nav>
 
     <main class="container">
         <div class="mb-4">
-            <h2 class="fw-bold mb-1" style="color: var(--brand-navy);">Attendance Tracking</h2>
-            <p class="text-muted">Monitor student logins, exit times, and identify absentees.</p>
+            <h2 class="fw-bold mb-1" style="color: var(--brand-navy);">Live Attendance Tracking</h2>
+            <p class="text-muted">Monitor student logins, exit times, and identify absentees in real-time.</p>
         </div>
 
         <div class="controls-section">
@@ -77,6 +86,9 @@
                 <div class="col-md-5">
                     <label class="form-label fw-bold text-muted small mb-1">Select Day Order Test</label>
                     <select name="test_title" class="form-select" onchange="this.form.submit()">
+                        {% if not test_titles %}
+                            <option disabled>No tests created yet</option>
+                        {% endif %}
                         {% for title in test_titles %}
                             <option value="{{ title }}" {% if title == selected_title %}selected{% endif %}>{{ title }}</option>
                         {% endfor %}
@@ -84,7 +96,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold text-muted small mb-1">Search Student</label>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search Name or Reg No..." onkeyup="filterTable()">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search Name or Reg No..." onkeyup="applyFilters()">
                 </div>
                 <div class="col-md-3 text-md-end">
                     <button type="button" class="btn btn-danger w-100 fw-bold" onclick="exportToPDF()" style="background-color: var(--brand-crimson);">
@@ -97,15 +109,15 @@
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon icon-total"><i class="bi bi-people-fill"></i></div><div class="stat-info"><p>Total Students</p><h3>{{ stats.total }}</h3></div></div></div>
             <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon icon-present"><i class="bi bi-check-circle-fill"></i></div><div class="stat-info"><p>Completed</p><h3>{{ stats.attended }}</h3></div></div></div>
-            <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon icon-absent"><i class="bi bi-x-circle-fill"></i></div><div class="stat-info"><p>Absent</p><h3>{{ stats.absent }}</h3></div></div></div>
             <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon icon-live"><i class="bi bi-broadcast"></i></div><div class="stat-info"><p>In Progress</p><h3>{{ stats.live }}</h3></div></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon icon-absent"><i class="bi bi-x-circle-fill"></i></div><div class="stat-info"><p>Absent</p><h3>{{ stats.absent }}</h3></div></div></div>
         </div>
 
         <div class="d-flex gap-2 mb-3">
-            <button class="btn btn-sm btn-dark px-3 rounded-pill" onclick="filterStatus('All')">All</button>
-            <button class="btn btn-sm btn-outline-success px-3 rounded-pill" onclick="filterStatus('Completed')">Completed</button>
-            <button class="btn btn-sm btn-outline-info px-3 rounded-pill" onclick="filterStatus('In Progress')">Live</button>
-            <button class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="filterStatus('Absent')">Absent</button>
+            <button class="btn btn-sm btn-light border btn-filter active-filter px-3 rounded-pill" data-filter="All" onclick="setStatusFilter('All', this)">All</button>
+            <button class="btn btn-sm btn-light border btn-filter px-3 rounded-pill text-success" data-filter="Completed" onclick="setStatusFilter('Completed', this)">Completed</button>
+            <button class="btn btn-sm btn-light border btn-filter px-3 rounded-pill text-info" data-filter="In Progress" onclick="setStatusFilter('In Progress', this)">Live / In Progress</button>
+            <button class="btn btn-sm btn-light border btn-filter px-3 rounded-pill text-danger" data-filter="Absent" onclick="setStatusFilter('Absent', this)">Absent</button>
         </div>
 
         <div class="card table-card mb-5">
@@ -122,7 +134,7 @@
                     </thead>
                     <tbody id="tableBody">
                         {% for data in attendance_data %}
-                        <tr data-status="{{ data.status }}">
+                        <tr class="data-row" data-status="{{ data.status }}">
                             <td class="ps-4 fw-bold text-dark">{{ data.student.name }}</td>
                             <td class="font-monospace text-muted small">{{ data.student.register }}</td>
                             <td>
@@ -139,6 +151,13 @@
                                 {% else %}<span class="status-badge status-absent"><i class="bi bi-x-lg"></i> Absent</span>{% endif %}
                             </td>
                         </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder-x fs-1 d-block mb-3 opacity-50"></i>
+                                No attendance data available for this test.
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -148,16 +167,47 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function filterTable() {
-            const input = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('#tableBody tr').forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+        let currentStatusFilter = sessionStorage.getItem('attendanceStatusFilter') || 'All';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const activeBtn = document.querySelector(`.btn-filter[data-filter="${currentStatusFilter}"]`);
+            if (activeBtn) {
+                document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active-filter', 'bg-white'));
+                activeBtn.classList.add('active-filter', 'bg-white');
+            }
+            const savedSearch = sessionStorage.getItem('attendanceSearchText');
+            if (savedSearch) {
+                document.getElementById('searchInput').value = savedSearch;
+            }
+            applyFilters();
+        });
+
+        function setStatusFilter(status, btnElement) {
+            currentStatusFilter = status;
+            sessionStorage.setItem('attendanceStatusFilter', status);
+            document.querySelectorAll('.btn-filter').forEach(btn => {
+                btn.classList.remove('active-filter', 'bg-white');
             });
+            btnElement.classList.add('active-filter', 'bg-white');
+            applyFilters();
         }
 
-        function filterStatus(status) {
-            document.querySelectorAll('#tableBody tr').forEach(row => {
-                row.style.display = (status === 'All' || row.getAttribute('data-status') === status) ? '' : 'none';
+        function applyFilters() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            sessionStorage.setItem('attendanceSearchText', searchInput); 
+            const rows = document.querySelectorAll('.data-row');
+
+            rows.forEach(row => {
+                const textContent = row.textContent.toLowerCase();
+                const rowStatus = row.getAttribute('data-status');
+                const matchesSearch = textContent.includes(searchInput);
+                const matchesStatus = (currentStatusFilter === 'All' || rowStatus === currentStatusFilter);
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
         }
 
@@ -168,11 +218,14 @@
             setTimeout(() => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p');
-                const testName = document.querySelector('select[name="test_title"]').value;
+                const testNameSelect = document.querySelector('select[name="test_title"]');
+                const testName = testNameSelect ? testNameSelect.value : 'Attendance';
                 
                 doc.setFontSize(16);
+                doc.setTextColor(10, 36, 114);
                 doc.text("Attendance Report: " + testName, 14, 20);
                 doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
                 doc.text("Generated: " + new Date().toLocaleString(), 14, 28);
 
                 doc.autoTable({
@@ -184,7 +237,7 @@
                         }
                     }
                 });
-                doc.save(`Attendance_${testName}.pdf`);
+                doc.save(`Attendance_${testName.replace(/\s+/g, '_')}.pdf`);
                 Swal.close();
             }, 500);
         }
