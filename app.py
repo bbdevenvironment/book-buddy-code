@@ -10,6 +10,7 @@ import io
 import sys
 import traceback
 import tempfile
+from sqlalchemy.exc import IntegrityError 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pro_secret_key_99'
@@ -84,7 +85,7 @@ class Testmaintain(db.Model):
 class Student(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    register = db.Column(db.Integer)
+    register = db.Column(db.String(50))
     username = db.Column(db.String(15), unique=True) 
     set_password = db.Column(db.String(100))
     verify_password = db.Column(db.String(100))
@@ -382,13 +383,42 @@ def contact():
         db.session.commit(); flash('Message Sent!'); return redirect(url_for('student_problem_view', id=current_user.id))
     return render_template('contact.html')
 
+
+
 @app.route('/request_student', methods=['GET','POST'])
 def request_student():
     if request.method == 'POST':
-        db.session.add(Student(name=request.form.get('name'), register=request.form.get('register'), username=request.form.get('username'), set_password=request.form.get('set_password'), verify_password=request.form.get('verify_password'), department=request.form.get('department'), batch=request.form.get('batch'), collage=request.form.get('collage'), phone_no=request.form.get('phone_no'), email=request.form.get('email')))
-        db.session.commit(); flash("Registration request submitted!"); return redirect(url_for('home'))
+        try:
+            new_student = Student(
+                name=request.form.get('name'), 
+                register=request.form.get('register'), 
+                username=request.form.get('username'), 
+                set_password=request.form.get('set_password'), 
+                verify_password=request.form.get('verify_password'), 
+                department=request.form.get('department'), 
+                batch=request.form.get('batch'), 
+                collage=request.form.get('collage'), 
+                phone_no=request.form.get('phone_no'), 
+                email=request.form.get('email')
+            )
+            db.session.add(new_student)
+            db.session.commit()
+            
+            flash("Registration request submitted successfully!", "success")
+            return redirect(url_for('home'))
+            
+        except IntegrityError:
+            # Catches duplicate usernames
+            db.session.rollback()
+            flash("Username already exists. Please choose a different username.", "danger")
+            
+        except Exception as e:
+            # Catches missing columns, wrong data types, etc.
+            db.session.rollback()
+            print(f"DATABASE ERROR: {str(e)}") # This will print to your deployment server logs so you can read it
+            flash("An error occurred while submitting your registration. Please try again.", "danger")
+            
     return render_template('request_student.html')
-
 @app.route('/admin/delete_msg/<int:id>')
 @login_required
 def delete_msg(id):
