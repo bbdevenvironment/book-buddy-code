@@ -4,6 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Cache-Control" content="post-check=0, pre-check=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>Test Directory | BOOK BUDDY Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -104,7 +110,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            border-top: 4px solid transparent; /* Placeholder for JS Border updates */
+            border-top: 4px solid transparent; 
         }
 
         .test-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); }
@@ -157,6 +163,8 @@
 </head>
 
 <body>
+    
+    <input type="hidden" id="server-current-time" value="{{ now.strftime('%Y-%m-%dT%H:%M:%S') }}">
 
     <nav class="navbar sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
@@ -306,7 +314,7 @@
 
                     <div class="modal fade" id="timeModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
-                            <form action="{{ url_for('set_test_timing', title=title) }}" method="POST" class="modal-content border-0 shadow-lg">
+                            <form action="{{ url_for('set_test_timing', title=title) }}" method="POST" class="modal-content border-0 shadow-lg time-update-form">
                                 <div class="modal-header modal-header-navy">
                                     <h5 class="modal-title fw-bold"><i class="bi bi-clock me-2"></i>Schedule Configuration</h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -357,9 +365,35 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // 1. FORMAT INTERCEPTOR: Strips seconds from datetime-local before sending to backend to prevent crashes
+        document.querySelectorAll('.time-update-form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const startInput = this.querySelector('input[name="start_time"]');
+                const endInput = this.querySelector('input[name="end_time"]');
+                
+                // Trims the string down to "YYYY-MM-DDTHH:MM" removing any seconds
+                if(startInput && startInput.value.length > 16) {
+                    startInput.value = startInput.value.substring(0, 16);
+                }
+                if(endInput && endInput.value.length > 16) {
+                    endInput.value = endInput.value.substring(0, 16);
+                }
+            });
+        });
+
+        // 2. SERVER TIME SYNC: Creates a perfect synced clock with the Python server timezone
+        const serverTimeStr = document.getElementById('server-current-time').value;
+        const serverDate = new Date(serverTimeStr);
+        const clientDate = new Date();
+        const timeOffset = serverDate.getTime() - clientDate.getTime();
+
+        function getAccurateServerTime() {
+            return new Date(new Date().getTime() + timeOffset);
+        }
+
+        // 3. UI Status Filter Logic
         let currentFilter = 'all';
 
-        // 1. Sidebar Filter Logic
         function setFilter(filterType, btnElement) {
             currentFilter = filterType;
             
@@ -371,10 +405,10 @@
             updateTestStatuses();
         }
 
-        // 2. Automatic Status Calculation based on Dates
+        // 4. Automatic Status Calculation
         function updateTestStatuses() {
             const cardsCount = document.querySelectorAll('[id^="badge-container-"]').length;
-            const now = new Date(); 
+            const now = getAccurateServerTime(); 
             let visibleCount = 0;
 
             for(let i = 1; i <= cardsCount; i++) {
@@ -390,7 +424,7 @@
                 let calculatedCategory = '';
                 let borderClass = '';
 
-                // Logic: No dates = Draft. Has Dates = Calculate relative to NOW.
+                // Logic: No dates = Draft. Has Dates = Calculate relative to synced server NOW.
                 if (!startStr || !endStr) {
                     badgeHTML = `<span class="badge badge-draft px-3 py-2">DRAFT (Hidden)</span>`;
                     calculatedCategory = 'draft';
@@ -403,7 +437,7 @@
 
                     if (now < startTime) {
                         badgeHTML = `<span class="badge badge-upcoming px-3 py-2"><i class="bi bi-calendar-event me-1"></i> UPCOMING</span>`;
-                        calculatedCategory = 'live'; // Grouped in live/upcoming filter
+                        calculatedCategory = 'live'; 
                         borderClass = 'status-border-upcoming';
                         if(resultsBtn) resultsBtn.style.display = 'none';
                     } 
@@ -421,11 +455,9 @@
                     }
                 }
 
-                // Apply UI Updates
                 badgeContainer.innerHTML = badgeHTML;
                 cardUI.className = `card test-card ${borderClass}`;
 
-                // Apply Filter Display
                 if (currentFilter === 'all' || calculatedCategory === currentFilter) {
                     cardCol.style.display = 'block';
                     visibleCount++;
@@ -434,7 +466,6 @@
                 }
             }
 
-            // Show Empty State if no cards match filter
             const emptyState = document.getElementById('empty-filter-state');
             if (visibleCount === 0 && cardsCount > 0) {
                 emptyState.style.display = 'block';
@@ -443,7 +474,6 @@
             }
         }
 
-        // Run immediately on load, then every 10 seconds
         document.addEventListener("DOMContentLoaded", function() {
             updateTestStatuses();
             setInterval(updateTestStatuses, 10000); 
