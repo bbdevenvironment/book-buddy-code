@@ -105,6 +105,9 @@
 
         .test-results { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; max-height: 250px; overflow-y: auto; }
         .output-console { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.85rem; min-height: 120px; max-height: 250px; overflow-y: auto; margin: 0; }
+        
+        /* HTML iframe preview box */
+        .html-preview-box { display: none; width: 100%; height: 350px; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
 
         .submit-test-btn { position: fixed; bottom: 2rem; right: 2rem; background-color: var(--brand-crimson); color: var(--brand-white); padding: 1rem 2rem; border: none; border-radius: 100px; font-weight: 700; font-size: 1.05rem; cursor: pointer; box-shadow: 0 8px 20px rgba(116, 15, 40, 0.3); transition: all 0.3s; z-index: 1000; display: flex; align-items: center; gap: 10px; }
         .submit-test-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(116, 15, 40, 0.4); background-color: #5a0b1f; }
@@ -120,7 +123,7 @@
 
     {% if test.end_time and now > test.end_time %}
     <div class="practice-banner">
-        <i class="bi bi-info-circle-fill me-1"></i> PRACTICE MODE: This assessment has ended. You can practice, but submissions will not be recorded.
+        <i class="bi bi-info-circle-fill me-1"></i> PRACTICE MODE: This assessment has ended. Code is automatically saved to your browser so you can continue where you left off.
     </div>
     {% endif %}
 
@@ -216,12 +219,20 @@
                 <div class="editor-section">
                     <div class="editor-toolbar">
                         <span class="toolbar-label"><i class="bi bi-code-slash fs-5"></i> Code Editor</span>
-                        <select class="lang-select" id="lang-{{ question.id }}" onchange="changeLanguage({{ question.id }}, this.value)">
-                            <option value="python">Python</option>
-                            <option value="c">C</option>
-                            <option value="cpp">C++</option>
-                            <option value="java">Java</option>
-                        </select>
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-light border me-2 shadow-sm text-dark fw-bold" onclick="formatCode({{ question.id }})" title="Auto-Format Code">
+                                <i class="bi bi-magic text-warning"></i> Format
+                            </button>
+                            <select class="lang-select" id="lang-{{ question.id }}" data-prev="python" onchange="changeLanguage({{ question.id }}, this.value)">
+                                <option value="python">Python</option>
+                                <option value="c">C</option>
+                                <option value="cpp">C++</option>
+                                <option value="java">Java</option>
+                                <option value="javascript">JavaScript (Node)</option>
+                                <option value="html">HTML/CSS/JS</option>
+                                <option value="sql">SQL</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="editor-container code-editor-block" id="editor-container-{{ question.id }}">
                         <div id="editor-{{ question.id }}" style="height: 100%; width: 100%;"></div>
@@ -239,17 +250,22 @@
                         <textarea id="custom-input-{{ question.id }}" class="custom-input-area" rows="2" placeholder="Enter custom test data here..."></textarea>
                         
                         <div class="action-row">
-                            <button class="btn-action btn-run" onclick="runCode({{ question.id }})">
+                            <button type="button" class="btn-action btn-run" onclick="runCode({{ question.id }})">
                                 <i class="bi bi-play-fill"></i> Run Code
                             </button>
-                            <button class="btn-action btn-submit-q" onclick="testQuestion({{ question.id }})">
+                            <button type="button" class="btn-action btn-submit-q" onclick="testQuestion({{ question.id }})">
                                 <i class="bi bi-cloud-arrow-up-fill"></i> Execute Test Cases
                             </button>
                         </div>
 
                         <div id="results-{{ question.id }}" class="test-results" style="display: none;"></div>
 
-                        <span class="io-label mt-2">Console Output</span>
+                        <span class="io-label mt-2">Console / Visual Output</span>
+                        
+                        <div id="html-preview-{{ question.id }}" class="html-preview-box">
+                            <iframe id="iframe-{{ question.id }}" style="width: 100%; height: 100%; border: none;"></iframe>
+                        </div>
+
                         <pre id="output-{{ question.id }}" class="output-console">Waiting for execution...</pre>
                     </div>
                 </div>
@@ -273,32 +289,17 @@
     <script>
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.code-editor-block').forEach(container => {
-                container.addEventListener('paste', e => { 
-                    e.preventDefault(); e.stopPropagation();
-                    Toast.fire({icon: 'warning', title: 'Pasting is disabled in the editor.'}); 
-                }, true);
-                container.addEventListener('cut', e => { 
-                    e.preventDefault(); e.stopPropagation();
-                    Toast.fire({icon: 'warning', title: 'Cutting is disabled.'}); 
-                }, true);
-                container.addEventListener('keydown', e => {
-                    if (e.ctrlKey && (e.key === 'a' || e.key === 'A')) {
-                        e.preventDefault(); e.stopPropagation();
-                        Toast.fire({icon: 'warning', title: 'Select All is disabled.'});
-                    }
-                }, true);
-            });
-        });
+        // UNIQUE CACHE PREFIX
+        const cachePrefix = `bookbuddy_${'{{ student.username }}'}_test${'{{ test.id }}'}`;
+        
+        const supportedLangs = ['python', 'c', 'cpp', 'java', 'javascript', 'html', 'sql'];
 
         require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
 
         const editors = {};
-        const codeState = {};
+        const codeState = {}; 
         const questionStatus = {};
         
-        // PASSING TEST CASES TO JAVASCRIPT
         const testCases = {
             {% for question in questions %}
             {{ question.id }}: {
@@ -344,8 +345,19 @@
             {% for question in questions %}
             (function() {
                 const qid = {{ question.id }};
+                codeState[qid] = {};
+                
+                supportedLangs.forEach(l => {
+                    const savedData = localStorage.getItem(`${cachePrefix}_q${qid}_${l}`);
+                    if (savedData) {
+                        codeState[qid][l] = savedData;
+                    }
+                });
+
+                const initialCode = codeState[qid]['python'] || getDefaultCode('python');
+
                 const editor = monaco.editor.create(document.getElementById(`editor-${qid}`), {
-                    value: "# Write your solution here\n",
+                    value: initialCode,
                     language: "python",
                     theme: "vs-dark",
                     automaticLayout: true,
@@ -359,15 +371,29 @@
                 });
                 
                 editors[qid] = editor;
-                codeState[qid] = { python: "# Write your solution here\n" };
                 questionStatus[qid] = { solved: false, passed: 0, total: testCases[qid].test_cases.length };
                 
                 editor.onDidChangeModelContent(() => {
-                    document.getElementById(`code-${qid}`).value = editor.getValue();
+                    const currentLang = document.getElementById(`lang-hidden-${qid}`).value;
+                    const code = editor.getValue();
+                    
+                    document.getElementById(`code-${qid}`).value = code;
+                    
+                    codeState[qid][currentLang] = code;
+                    localStorage.setItem(`${cachePrefix}_q${qid}_${currentLang}`, code);
                 });
+
+                document.getElementById(`code-${qid}`).value = editor.getValue();
             })();
             {% endfor %}
         });
+
+        function formatCode(questionId) {
+            const editor = editors[questionId];
+            editor.getAction('editor.action.formatDocument').run().then(() => {
+                Toast.fire({ icon: 'success', title: 'Code formatted!' });
+            });
+        }
 
         function switchQuestion(questionId) {
             document.querySelectorAll('.question-container').forEach(el => el.classList.remove('active'));
@@ -380,14 +406,26 @@
         document.addEventListener('DOMContentLoaded', function() { switchQuestion({{ questions[0].id }}); });
         {% endif %}
 
-        function changeLanguage(questionId, lang) {
+        // FIX: The exact race condition when switching tabs is resolved here
+        function changeLanguage(questionId, newLang) {
             const editor = editors[questionId];
             const currentLang = document.getElementById(`lang-${questionId}`).getAttribute('data-prev') || 'python';
-            if (!codeState[questionId][currentLang]) codeState[questionId][currentLang] = editor.getValue();
-            monaco.editor.setModelLanguage(editor.getModel(), lang === 'cpp' ? 'cpp' : lang);
-            editor.setValue(codeState[questionId][lang] || getDefaultCode(lang));
-            document.getElementById(`lang-hidden-${questionId}`).value = lang;
-            document.getElementById(`lang-${questionId}`).setAttribute('data-prev', lang);
+            
+            // 1. Save old state manually before switching
+            codeState[questionId][currentLang] = editor.getValue();
+            localStorage.setItem(`${cachePrefix}_q${questionId}_${currentLang}`, editor.getValue());
+
+            let monacoLang = newLang;
+            if (newLang === 'c' || newLang === 'cpp') monacoLang = 'cpp';
+            monaco.editor.setModelLanguage(editor.getModel(), monacoLang);
+            
+            // 2. Update tracking values FIRST to prevent onChange bugs
+            document.getElementById(`lang-hidden-${questionId}`).value = newLang;
+            document.getElementById(`lang-${questionId}`).setAttribute('data-prev', newLang);
+
+            // 3. Inject new code
+            const newCode = codeState[questionId][newLang] || getDefaultCode(newLang);
+            editor.setValue(newCode);
         }
 
         function getDefaultCode(lang) {
@@ -395,20 +433,42 @@
                 python: "# Write your solution here\n",
                 c: '#include <stdio.h>\n\nint main() {\n    // Your code here\n    return 0;\n}',
                 cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}',
-                java: 'public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}'
+                java: 'public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}',
+                javascript: '// Write your JavaScript here (Node.js)\nconsole.log("Hello World");',
+                html: '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <title>Web Page</title>\n    <style>\n        /* CSS here */\n        body { font-family: sans-serif; text-align: center; margin-top: 50px; }\n    </style>\n</head>\n<body>\n    \n    <h1>Hello World</h1>\n    \n    <script>\n        // JS here\n    <\/script>\n</body>\n</html>',
+                sql: '-- Write your SQL Query here\nSELECT * FROM table_name;'
             };
-            return defaults[lang] || defaults.python;
+            return defaults[lang] || "";
         }
 
         async function runCode(questionId) {
             const outputElem = document.getElementById(`output-${questionId}`);
+            const htmlPreview = document.getElementById(`html-preview-${questionId}`);
             const editor = editors[questionId];
             const code = editor.getValue();
             const lang = document.getElementById(`lang-${questionId}`).value;
             const input = document.getElementById(`custom-input-${questionId}`).value;
             
-            if (input.trim() === '') Toast.fire({ icon: 'info', title: 'Running without custom input...' });
+            // FIX: If HTML, render an actual browser iframe preview instantly!
+            if (lang === 'html') {
+                outputElem.style.display = 'none';
+                htmlPreview.style.display = 'block';
+                
+                const iframe = document.getElementById(`iframe-${questionId}`);
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(code);
+                doc.close();
+                
+                Toast.fire({ icon: 'success', title: `HTML Rendered successfully.` });
+                return;
+            }
 
+            // Normal Execution
+            outputElem.style.display = 'block';
+            htmlPreview.style.display = 'none';
+
+            if (input.trim() === '') Toast.fire({ icon: 'info', title: 'Running without custom input...' });
             outputElem.innerHTML = "<span class='spinner-custom' style='display:inline-block; border-top-color:var(--brand-navy); border-right-color:var(--brand-navy); border-bottom-color:var(--brand-navy); width:15px; height:15px; border-width:2px; margin-right:5px;'></span> Executing...";
             
             try {
@@ -425,10 +485,17 @@
         }
 
         async function testQuestion(questionId) {
+            const lang = document.getElementById(`lang-${questionId}`).value;
+            
+            // Cannot run test cases on raw HTML
+            if (lang === 'html') {
+                Swal.fire('Not Supported', 'Test Cases cannot be executed against visual HTML/CSS. Please use "Run Code" to view your output.', 'info');
+                return;
+            }
+
             const resultsElem = document.getElementById(`results-${questionId}`);
             const editor = editors[questionId];
             const code = editor.getValue();
-            const lang = document.getElementById(`lang-${questionId}`).value;
             
             resultsElem.style.display = 'block';
             resultsElem.innerHTML = '<div class="text-center py-3"><span class="spinner-custom" style="display:inline-block; border-color:var(--brand-navy); border-top-color:transparent;"></span> Running Test Cases...</div>';
@@ -468,7 +535,6 @@
                         div.style.color = '#991b1b';
                         div.style.border = '1px solid #fecaca';
                         
-                        // ANTI-CHEAT LOGIC: Hide expected output if it's a hidden test case
                         if (test.is_sample) {
                             div.innerHTML = `
                                 <i class="bi bi-x-circle-fill me-2"></i> Sample Test Case #${test.id} : Failed
@@ -482,7 +548,6 @@
                             div.innerHTML = `<i class="bi bi-shield-lock-fill me-2"></i> Hidden Test Case #${test.id} : Failed (Output is hidden)`;
                         }
                     }
-                    
                     resultsElem.appendChild(div);
                     
                 } catch (error) {
@@ -498,7 +563,6 @@
                 }
             }
             
-            // Logic for "Solved" vs "Attempted" (Must pass ALL test cases to be Solved)
             const isSolved = passed === testCasesList.length;
             questionStatus[questionId].solved = isSolved;
             questionStatus[questionId].passed = passed;

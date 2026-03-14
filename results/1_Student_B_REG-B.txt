@@ -1,34 +1,40 @@
 === TEST RESULT REPORT ===
 Student: Student B (Reg: REG-B)
 Test: 1
-Final Score: 0 / 30
+Final Score: 0 / 20
 Status: FAILED
-Submitted At: 2026-03-14 10:59:32
+Submitted At: 2026-03-14 23:03:45
 =========================
 
-Question: Arun
-Language: python
-Test Cases Passed: 0/2
+Question: Multiply Two Numbers
+Language: html
+Test Cases Passed: 0/5
 Marks: 0/10
 ---
 Code Submitted:
-# Write your solution here
-
-...
-
-Question: Sum of Two Numbers
-Language: python
-Test Cases Passed: 0/2
-Marks: 0/10
----
-Code Submitted:
-# Write your solution here
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Web Page</title>
+    <style>
+        /* CSS here */
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    </style>
+</head>
+<body>
+    
+    <h1>Hello World Arun</h1>
+    <h3> Arun </h3>
+    <script>
+        // JS here
+    </script>
+</body>
+</html>
 ...
 
 Question: Even or Odd
 Language: python
-Test Cases Passed: 0/2
+Test Cases Passed: 0/5
 Marks: 0/10
 ---
 Code Submitted:
