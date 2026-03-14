@@ -94,17 +94,22 @@
             100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
         }
 
-        /* Info Grid */
+        /* Info Grid Updates */
         .info-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;
             background: #f8fafc; padding: 15px; border-radius: 12px;
         }
         .info-item { display: flex; align-items: flex-start; gap: 10px; }
-        .info-item-full { grid-column: span 2; } /* Spans both columns */
+        .info-item-full { grid-column: span 2; } 
         
         .info-item i { color: var(--brand-navy); font-size: 1.1rem; margin-top: 2px; }
+        .info-text { width: 100%; }
         .info-text small { display: block; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
         .info-text span { color: var(--text-main); font-weight: 600; font-size: 0.9rem; }
+        
+        .schedule-stack { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+        .schedule-stack span { font-size: 0.85rem; font-weight: 500; color: var(--text-main); }
+        .schedule-stack strong { color: var(--text-main); font-weight: 700; width: 45px; display: inline-block; }
 
         /* Buttons */
         .btn-take-test {
@@ -203,9 +208,23 @@
                                         </div>
                                     </div>
                                     <div class="info-grid">
-                                        <div class="info-item"><i class="bi bi-calendar3"></i><div class="info-text"><small>Date</small><span>{{ first_entry.start_time.strftime('%d %b, %Y') }}</span></div></div>
-                                        <div class="info-item"><i class="bi bi-clock"></i><div class="info-text"><small>Time Window</small><span>{{ first_entry.start_time.strftime('%I:%M %p') }} - {{ first_entry.end_time.strftime('%I:%M %p') }}</span></div></div>
-                                        <div class="info-item info-item-full"><i class="bi bi-puzzle"></i><div class="info-text"><small>Questions</small><span>{{ entries|length }} Programming Tasks</span></div></div>
+                                        <div class="info-item info-item-full">
+                                            <i class="bi bi-calendar-range"></i>
+                                            <div class="info-text w-100">
+                                                <small>Test Window</small>
+                                                <div class="schedule-stack">
+                                                    <span><i class="bi bi-play-circle text-success me-1"></i> <strong>Start:</strong> {{ first_entry.start_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                                    <span><i class="bi bi-stop-circle text-danger me-1"></i> <strong>End:</strong> {{ first_entry.end_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="info-item info-item-full">
+                                            <i class="bi bi-puzzle"></i>
+                                            <div class="info-text">
+                                                <small>Questions</small>
+                                                <span>{{ entries|length }} Programming Tasks</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="flex-grow-1"></div> 
                                     <div class="mt-auto pt-2">
@@ -248,9 +267,23 @@
                                         </div>
                                     </div>
                                     <div class="info-grid">
-                                        <div class="info-item"><i class="bi bi-calendar3"></i><div class="info-text"><small>Date</small><span>{{ first_entry.start_time.strftime('%d %b, %Y') }}</span></div></div>
-                                        <div class="info-item"><i class="bi bi-clock"></i><div class="info-text"><small>Time Window</small><span>{{ first_entry.start_time.strftime('%I:%M %p') }} - {{ first_entry.end_time.strftime('%I:%M %p') }}</span></div></div>
-                                        <div class="info-item info-item-full"><i class="bi bi-puzzle"></i><div class="info-text"><small>Questions</small><span>{{ entries|length }} Programming Tasks</span></div></div>
+                                        <div class="info-item info-item-full">
+                                            <i class="bi bi-calendar-range"></i>
+                                            <div class="info-text w-100">
+                                                <small>Test Window</small>
+                                                <div class="schedule-stack">
+                                                    <span><i class="bi bi-play-circle text-success me-1"></i> <strong>Start:</strong> {{ first_entry.start_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                                    <span><i class="bi bi-stop-circle text-danger me-1"></i> <strong>End:</strong> {{ first_entry.end_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="info-item info-item-full">
+                                            <i class="bi bi-puzzle"></i>
+                                            <div class="info-text">
+                                                <small>Questions</small>
+                                                <span>{{ entries|length }} Programming Tasks</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="flex-grow-1"></div> 
                                     <div class="mt-auto pt-2">
@@ -300,9 +333,23 @@
                                         </div>
                                     </div>
                                     <div class="info-grid">
-                                        <div class="info-item"><i class="bi bi-calendar3"></i><div class="info-text"><small>Date</small><span>{{ first_entry.start_time.strftime('%d %b, %Y') }}</span></div></div>
-                                        <div class="info-item"><i class="bi bi-clock"></i><div class="info-text"><small>Time Window</small><span>{{ first_entry.start_time.strftime('%I:%M %p') }} - {{ first_entry.end_time.strftime('%I:%M %p') }}</span></div></div>
-                                        <div class="info-item info-item-full"><i class="bi bi-puzzle"></i><div class="info-text"><small>Questions</small><span>{{ entries|length }} Programming Tasks</span></div></div>
+                                        <div class="info-item info-item-full">
+                                            <i class="bi bi-calendar-range"></i>
+                                            <div class="info-text w-100">
+                                                <small>Test Window</small>
+                                                <div class="schedule-stack">
+                                                    <span><i class="bi bi-play-circle text-success me-1"></i> <strong>Start:</strong> {{ first_entry.start_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                                    <span><i class="bi bi-stop-circle text-danger me-1"></i> <strong>End:</strong> {{ first_entry.end_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="info-item info-item-full">
+                                            <i class="bi bi-puzzle"></i>
+                                            <div class="info-text">
+                                                <small>Questions</small>
+                                                <span>{{ entries|length }} Programming Tasks</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="flex-grow-1"></div> 
                                     <div class="mt-auto pt-2 d-flex gap-2">

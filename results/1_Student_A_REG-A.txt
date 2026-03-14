@@ -1,0 +1,38 @@
+=== TEST RESULT REPORT ===
+Student: Student A (Reg: REG-A)
+Test: 1
+Final Score: 0 / 30
+Status: FAILED
+Submitted At: 2026-03-14 21:52:21
+=========================
+
+Question: Multiply Two Numbers
+Language: python
+Test Cases Passed: 0/5
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+
+Question: Even or Odd
+Language: python
+Test Cases Passed: 0/5
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+
+Question: Maximum of Two
+Language: python
+Test Cases Passed: 0/5
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+

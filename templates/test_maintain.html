@@ -190,6 +190,19 @@
 
     <main class="container">
         
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% set alert_class = 'success' if category == 'success' else 'danger' %}
+                    <div class="alert alert-{{ alert_class }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        <i class="bi {% if category == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
             <div>
                 <h2 class="fw-bold mb-1" style="color: var(--brand-navy);">Test Directory</h2>
@@ -331,12 +344,12 @@
 
                                     <div class="mb-4">
                                         <label class="form-label fw-bold" style="color: var(--brand-navy);">Start Date & Time</label>
-                                        <input type="datetime-local" name="start_time" class="form-control bg-light" 
+                                        <input type="datetime-local" step="60" name="start_time" class="form-control bg-light" 
                                                value="{{ first_entry.start_time.strftime('%Y-%m-%dT%H:%M') if first_entry.start_time }}" required>
                                     </div>
                                     <div class="mb-4">
                                         <label class="form-label fw-bold" style="color: var(--brand-navy);">End Date & Time</label>
-                                        <input type="datetime-local" name="end_time" class="form-control bg-light" 
+                                        <input type="datetime-local" step="60" name="end_time" class="form-control bg-light" 
                                                value="{{ first_entry.end_time.strftime('%Y-%m-%dT%H:%M') if first_entry.end_time }}" required>
                                     </div>
                                     
@@ -365,18 +378,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // 1. FORMAT INTERCEPTOR: Strips seconds from datetime-local before sending to backend to prevent crashes
-        document.querySelectorAll('.time-update-form').forEach(form => {
-            form.addEventListener('submit', function() {
-                const startInput = this.querySelector('input[name="start_time"]');
-                const endInput = this.querySelector('input[name="end_time"]');
-                
-                // Trims the string down to "YYYY-MM-DDTHH:MM" removing any seconds
-                if(startInput && startInput.value.length > 16) {
-                    startInput.value = startInput.value.substring(0, 16);
-                }
-                if(endInput && endInput.value.length > 16) {
-                    endInput.value = endInput.value.substring(0, 16);
+        // Formatter Backup: Still strips seconds dynamically if the browser tries to add them
+        document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.value && this.value.length > 16) {
+                    this.value = this.value.substring(0, 16);
                 }
             });
         });
@@ -424,7 +430,6 @@
                 let calculatedCategory = '';
                 let borderClass = '';
 
-                // Logic: No dates = Draft. Has Dates = Calculate relative to synced server NOW.
                 if (!startStr || !endStr) {
                     badgeHTML = `<span class="badge badge-draft px-3 py-2">DRAFT (Hidden)</span>`;
                     calculatedCategory = 'draft';
@@ -455,22 +460,26 @@
                     }
                 }
 
-                badgeContainer.innerHTML = badgeHTML;
-                cardUI.className = `card test-card ${borderClass}`;
+                if(badgeContainer) badgeContainer.innerHTML = badgeHTML;
+                if(cardUI) cardUI.className = `card test-card ${borderClass}`;
 
-                if (currentFilter === 'all' || calculatedCategory === currentFilter) {
-                    cardCol.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    cardCol.style.display = 'none';
+                if (cardCol) {
+                    if (currentFilter === 'all' || calculatedCategory === currentFilter) {
+                        cardCol.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        cardCol.style.display = 'none';
+                    }
                 }
             }
 
             const emptyState = document.getElementById('empty-filter-state');
-            if (visibleCount === 0 && cardsCount > 0) {
-                emptyState.style.display = 'block';
-            } else {
-                emptyState.style.display = 'none';
+            if (emptyState) {
+                if (visibleCount === 0 && cardsCount > 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                }
             }
         }
 

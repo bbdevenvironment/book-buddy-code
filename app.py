@@ -600,10 +600,29 @@ def delete_entire_test(title):
 
 @app.route('/set-test-timing/<string:title>', methods=['POST'])
 def set_test_timing(title):
-    start_dt = datetime.strptime(request.form.get('start_time'), '%Y-%m-%dT%H:%M')
-    end_dt = datetime.strptime(request.form.get('end_time'), '%Y-%m-%dT%H:%M')
-    Testmaintain.query.filter_by(test_title=title).update({'start_time': start_dt, 'end_time': end_dt, 'status': request.form.get('status', 'live')})
-    db.session.commit(); return redirect(url_for('test_maintain'))
+    try:
+        # Automatically slice the string to the first 16 chars (YYYY-MM-DDTHH:MM)
+        # This completely eliminates the "seconds" bug causing silent crashes
+        start_str = request.form.get('start_time')[:16]
+        end_str = request.form.get('end_time')[:16]
+        
+        start_dt = datetime.strptime(start_str, '%Y-%m-%dT%H:%M')
+        end_dt = datetime.strptime(end_str, '%Y-%m-%dT%H:%M')
+        
+        Testmaintain.query.filter_by(test_title=title).update({
+            'start_time': start_dt, 
+            'end_time': end_dt, 
+            'status': request.form.get('status', 'scheduled')
+        })
+        db.session.commit()
+        flash(f"Schedule for '{title}' updated successfully!", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Schedule Update Error: {str(e)}")
+        flash("Failed to update schedule. Please check the date format.", "danger")
+        
+    return redirect(url_for('test_maintain'))
 
 @app.route('/delete-test-entry/<int:entry_id>')
 def delete_test_entry(entry_id):

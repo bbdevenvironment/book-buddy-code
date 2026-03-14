@@ -7,6 +7,7 @@
     <title>Student Registration | BOOK BUDDY</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -195,12 +196,21 @@
             width: 100%;
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             background-color: var(--brand-crimson);
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(116, 15, 40, 0.25);
+        }
+
+        .submit-btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
         }
 
         .footer-note {
@@ -221,23 +231,11 @@
             color: var(--brand-navy);
         }
 
-        /* Custom SweetAlert Button Styling */
-        .swal2-confirm {
-            background-color: var(--brand-navy) !important;
-            border-radius: 8px !important;
-        }
-
         /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .styled-form {
-                padding: 25px 20px;
-            }
-            .form-header h1 {
-                font-size: 1.5rem;
-            }
-            .form-section {
-                padding: 20px 15px;
-            }
+            .styled-form { padding: 25px 20px; }
+            .form-header h1 { font-size: 1.5rem; }
+            .form-section { padding: 20px 15px; }
         }
     </style>
 </head>
@@ -264,6 +262,20 @@
     </nav>
 
     <div class="registration-container">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% set alert_class = 'success' if category == 'success' else 'danger' %}
+                    <div class="alert alert-{{ alert_class }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        <i class="bi {% if category == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <form id="registrationForm" action="/request_student" method="POST" class="styled-form">
             
             <header class="form-header">
@@ -278,28 +290,28 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Arun" required>
+                        <input type="text" name="name" class="form-control" placeholder="Name" maxlength="50" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Register Number</label>
-                        <input type="text" name="register" class="form-control" placeholder="12 Digit ID" required>
+                        <input type="text" name="register" class="form-control" placeholder="12 Digit ID" maxlength="50" required>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="username" class="form-label">Preferred Username</label>
-                    <input type="text" id="username" name="username" class="form-control" placeholder="e.g. IT_1234_Arun" required>
-                    <div class="form-text-custom">Format suggestion: Department_Last4Digits_Name</div>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="e.g. IT_1234_Arun" maxlength="15" required>
+                    <div class="form-text-custom">Format suggestion: Department_Last4Digits_Name (Max 15 characters)</div>
                 </div>
 
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Password</label>
-                        <input type="password" name="set_password" id="password" class="form-control" placeholder="••••••••" required>
+                        <input type="password" name="set_password" id="password" class="form-control" placeholder="••••••••" maxlength="50" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Verify Password</label>
-                        <input type="password" name="verify_password" id="verify_password" class="form-control" placeholder="••••••••" required>
+                        <input type="password" name="verify_password" id="verify_password" class="form-control" placeholder="••••••••" maxlength="50" required>
                     </div>
                 </div>
             </section>
@@ -322,18 +334,18 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Batch Year</label>
-                        <input type="text" name="batch" class="form-control" placeholder="e.g. 2024-2027" required>
+                        <input type="text" name="batch" class="form-control" placeholder="e.g. 2024-2027" maxlength="50" required>
                     </div>
                 </div>
 
                 <div class="row g-3">
                     <div class="col-md-8">
                         <label class="form-label">College Name</label>
-                        <input type="text" name="collage" class="form-control" placeholder="Enter institution name" required>
+                        <input type="text" name="collage" class="form-control" placeholder="Enter institution name" maxlength="100" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">College Code</label>
-                        <input type="number" name="collage_code" class="form-control" placeholder="Code">
+                        <input type="text" name="collage_code" class="form-control" placeholder="Code" maxlength="20">
                     </div>
                 </div>
             </section>
@@ -344,17 +356,19 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Phone Number</label>
-                        <input type="tel" name="phone_no" class="form-control" placeholder="98765 43210" required>
+                        <input type="tel" name="phone_no" class="form-control" placeholder="98765 43210" maxlength="20" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Email Address</label>
-                        <input type="email" name="email" class="form-control" placeholder="email@example.com" required>
+                        <input type="email" name="email" class="form-control" placeholder="email@example.com" maxlength="60" required>
                     </div>
                 </div>
             </section>
 
             <div class="mt-4">
-                <button type="submit" class="submit-btn">Submit Registration Request</button>
+                <button type="submit" id="submitBtn" class="submit-btn">
+                    <i class="bi bi-send-fill"></i> Submit Registration Request
+                </button>
                 <p class="footer-note">Already have an account? <a href="/student_login">Login here</a></p>
             </div>
 
@@ -364,10 +378,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Stop normal form submission temporarily
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Stop normal form submission
             
-            // Optional: Basic password match validation before showing popup
             const pwd = document.getElementById('password').value;
             const verifyPwd = document.getElementById('verify_password').value;
             
@@ -381,24 +394,45 @@
                 return;
             }
 
-            const form = this; // Capture the form reference
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending Request...';
 
-            // Show success popup
-            Swal.fire({
-                icon: 'success',
-                title: 'Request Sent Successfully!',
-                text: 'Your registration has been sent to the Admin. Please wait for approval.',
-                confirmButtonText: 'OK',
-                timer: 3000, // Auto-close after 3 seconds if they don't click OK
-                timerProgressBar: true
-            }).then((result) => {
-                // Once popup is closed, actually submit the form to backend
-                form.submit();
-                
-                // Note: The form.submit() above will hit your Python route (/request_student)
-                // You must configure your Python backend to return redirect('/') 
-                // inside your Flask app to complete the redirection home.
-            });
+            try {
+                // Send the data securely in the background
+                const formData = new FormData(this);
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow'
+                });
+
+                // If Flask redirects away from the registration page, it was a SUCCESS!
+                if (response.redirected && !response.url.includes('/request_student')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registration request submitted successfully!',
+                        text: 'Your registration has been sent. Redirecting to login page...',
+                        timer: 5000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = '/student_login'; // Auto-redirect after 5 seconds
+                    });
+                } else {
+                    // If it stays on the same page, there was an ERROR (like duplicate username)
+                    // We rewrite the page so the student can see the Red error banner
+                    const html = await response.text();
+                    document.open();
+                    document.write(html);
+                    document.close();
+                }
+            } catch (err) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send-fill"></i> Submit Registration Request';
+                Swal.fire('Error', 'Failed to connect to the server. Please try again.', 'error');
+            }
         });
     </script>
 </body>
