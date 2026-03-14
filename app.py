@@ -247,33 +247,127 @@ def student_overall_list():
     students = Student.query.all()
     return render_template('student_overall_list.html', students=students)
 
+
 @app.route('/new_question', methods=['GET','POST'])
+@login_required
 def add_new_question():
     if request.method == 'POST':
+        
+        # --- 1. HANDLE CSV BULK IMPORT ---
         if 'import_btn' in request.form:
             file = request.files.get('question_file')
-            if not file: return "No file uploaded"
-            data = json.load(file)
-            for q in data:
-                new_q = Question(question_id=q['question_id'], title=q['title'], description=q['description'], input_format=q['input_format'], constraints=q['constraints'], output_format=q['output_format'], explanation=q['explanation'], difficulty=q['difficulty'])
-                db.session.add(new_q); db.session.flush()
-                for case in q['test_cases']:
-                    db.session.add(TestCase(input_data=case['input'], expected_output=case['output'], is_sample=case.get('is_sample', False), points=case.get('points', 10), question_root_id=new_q.id))
-            db.session.commit()
-            flash(f"Successfully imported {len(data)} questions!", "success")
+            
+            if not file or file.filename == '':
+                flash("No file uploaded", "danger")
+                return redirect(url_for('add_new_question'))
+            
+            # Verify it is actually a CSV
+            if file.filename.endswith('.csv'):
+                try:
+                    stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+                    csv_input = csv.DictReader(stream)
+                    
+                    success_count = 0
+                    skip_count = 0
+                    
+                    for row in csv_input:
+                        # Clean up header names and check question_id
+                        q_id = row.get('question_id', '').strip()
+                        if not q_id: 
+                            continue
+                        
+                        # ANTI-DUPLICATE CHECK
+                        existing_q = Question.query.filter_by(question_id=q_id).first()
+                        if existing_q:
+                            skip_count += 1
+                            continue # Skip this row, ID already exists
+                            
+                        new_q = Question(
+                            question_id=q_id,
+                            title=row.get('title', ''),
+                            description=row.get('description', ''),
+                            input_format=row.get('input_format', ''),
+                            constraints=row.get('constraints', ''),
+                            output_format=row.get('output_format', ''),
+                            explanation=row.get('explanation', ''),
+                            difficulty=row.get('difficulty', 'Medium')
+                        )
+                        db.session.add(new_q)
+                        db.session.flush() # Save to DB instantly to get new_q.id
+                        
+                        # Loop through up to 5 test cases from the CSV (input_1, output_1, etc.)
+                        for i in range(1, 6): 
+                            inp = row.get(f'input_{i}', '').strip()
+                            outp = row.get(f'output_{i}', '').strip()
+                            
+                            if inp and outp:
+                                db.session.add(TestCase(
+                                    input_data=inp, 
+                                    expected_output=outp, 
+                                    is_sample=(i == 1), # Make the first one the sample case
+                                    points=10, 
+                                    question_root_id=new_q.id
+                                ))
+                        
+                        success_count += 1
+                        
+                    db.session.commit()
+                    
+                    if success_count > 0:
+                        flash(f"Successfully imported {success_count} questions! (Skipped {skip_count} duplicates)", "success")
+                    else:
+                        flash(f"No new questions added. All {skip_count} questions already existed.", "warning")
+                        
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error processing CSV. Please check your headers match exactly. Error: {str(e)}", "danger")
+            else:
+                flash("Invalid file format. Please upload a .csv file.", "danger")
+                
             return redirect(url_for('admin_panel'))
 
-        new_q = Question(question_id=request.form.get('question_id'), title=request.form.get('title'), description=request.form.get('description'), input_format=request.form.get('input_format'), constraints=request.form.get('constraints'), output_format=request.form.get('output_format'), explanation=request.form.get('explanation'), difficulty=request.form.get('difficulty'))
-        db.session.add(new_q); db.session.flush()
+        # --- 2. HANDLE MANUAL QUESTION ENTRY ---
+        q_id = request.form.get('question_id').strip()
+        
+        # ANTI-DUPLICATE CHECK FOR MANUAL ENTRY
+        existing_q = Question.query.filter_by(question_id=q_id).first()
+        if existing_q:
+            flash(f"Failed to add: A question with ID '{q_id}' already exists! Please use a unique ID.", "danger")
+            return redirect(url_for('add_new_question'))
+            
+        new_q = Question(
+            question_id=q_id, 
+            title=request.form.get('title'), 
+            description=request.form.get('description'), 
+            input_format=request.form.get('input_format'), 
+            constraints=request.form.get('constraints'), 
+            output_format=request.form.get('output_format'), 
+            explanation=request.form.get('explanation'), 
+            difficulty=request.form.get('difficulty')
+        )
+        db.session.add(new_q)
+        db.session.flush()
+        
         inputs = request.form.getlist('test_inputs[]')
         outputs = request.form.getlist('test_outputs[]')
+        
         for i in range(len(inputs)):
             if inputs[i].strip():
-                db.session.add(TestCase(input_data=inputs[i], expected_output=outputs[i], points=10, is_sample=(i == 0), question_root_id=new_q.id))
+                db.session.add(TestCase(
+                    input_data=inputs[i], 
+                    expected_output=outputs[i], 
+                    points=10, 
+                    is_sample=(i == 0), 
+                    question_root_id=new_q.id
+                ))
+                
         db.session.commit()
         flash("Question added successfully!", "success")
         return redirect(url_for('admin_panel'))
+
     return render_template('admin_question_add.html')
+
+
 
 @app.route('/export_questions')
 def export_questions():
@@ -300,16 +394,43 @@ def login():
 def update_question(id):
     question = Question.query.get_or_404(id)
     if request.method == 'POST':
-        question.question_id, question.title, question.description = request.form.get('question_id'), request.form.get('title'), request.form.get('description')
-        question.input_format, question.constraints, question.output_format = request.form.get('input_format'), request.form.get('constraints'), request.form.get('output_format')
-        question.explanation, question.difficulty = request.form.get('explanation'), request.form.get('difficulty')
+        new_q_id = request.form.get('question_id', '').strip()
+        
+        # Anti-Duplicate Check: Ensure new ID isn't used by a DIFFERENT question
+        if new_q_id != question.question_id:
+            existing = Question.query.filter_by(question_id=new_q_id).first()
+            if existing:
+                flash(f"Error: The Question ID '{new_q_id}' is already assigned to another question!", "danger")
+                return redirect(url_for('update_question', id=id))
+
+        question.question_id = new_q_id
+        question.title = request.form.get('title')
+        question.description = request.form.get('description')
+        question.input_format = request.form.get('input_format')
+        question.constraints = request.form.get('constraints')
+        question.output_format = request.form.get('output_format')
+        question.explanation = request.form.get('explanation')
+        question.difficulty = request.form.get('difficulty')
+        
+        # Delete old test cases and insert the new ones
         TestCase.query.filter_by(question_root_id=id).delete()
-        inputs, outputs = request.form.getlist('test_inputs[]'), request.form.getlist('test_outputs[]')
+        inputs = request.form.getlist('test_inputs[]')
+        outputs = request.form.getlist('test_outputs[]')
+        
         for i in range(len(inputs)):
             if inputs[i].strip():
-                db.session.add(TestCase(input_data=inputs[i], expected_output=outputs[i], is_sample=(i == 0), points=10, question_root_id=question.id))
+                db.session.add(TestCase(
+                    input_data=inputs[i], 
+                    expected_output=outputs[i], 
+                    is_sample=(i == 0), 
+                    points=10, 
+                    question_root_id=question.id
+                ))
+                
         db.session.commit()
-        flash("Question updated successfully!", "success"); return redirect(url_for('admin_panel'))
+        flash("Question updated successfully!", "success")
+        return redirect(url_for('every_question')) # Sends back to the Question Bank List
+        
     return render_template('edit_questions.html', questions=question)
 
 @app.route('/admin/student_approval/<int:id>', methods=['GET','POST'])
@@ -412,6 +533,33 @@ def delete_student(id):
 def every_question():
     questions = Question.query.all()
     return render_template('total_question.html', questions=questions)
+
+
+@app.route('/admin/delete_question/<int:id>')
+@login_required
+def delete_question(id):
+    # Find the question in the database
+    question_to_delete = Question.query.get_or_404(id)
+    
+    try:
+        # 1. Delete associated Test entries so the database doesn't crash
+        Testmaintain.query.filter_by(question_id=id).delete()
+        
+        # 2. Delete associated student submissions for this question
+        Submission.query.filter_by(question_id=id).delete()
+        
+        # 3. Delete the question itself (Test cases delete automatically)
+        db.session.delete(question_to_delete)
+        db.session.commit()
+        
+        flash("Question and its associated data were deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting question: {e}")
+        flash("An error occurred while trying to delete the question.", "danger")
+        
+    return redirect(url_for('every_question'))
+
 
 @app.route('/create_test', methods=['GET', 'POST'])
 def create_test():

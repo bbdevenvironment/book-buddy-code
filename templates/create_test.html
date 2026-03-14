@@ -37,25 +37,9 @@
             margin-bottom: 30px;
         }
 
-        .brand-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .brand-wrapper img {
-            height: 40px;
-            object-fit: contain;
-        }
-
-        .brand-name {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--brand-navy);
-            letter-spacing: 0.5px;
-        }
+        .brand-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-wrapper img { height: 40px; object-fit: contain; }
+        .brand-name { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--brand-navy); letter-spacing: 0.5px; }
 
         .admin-badge {
             background-color: rgba(10, 36, 114, 0.1);
@@ -87,185 +71,49 @@
         }
 
         /* Layout & Cards */
-        .sticky-form {
-            position: sticky;
-            top: 90px;
-        }
-
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
-            background-color: var(--brand-white);
-        }
-
-        .form-card {
-            border-top: 5px solid var(--brand-navy);
-        }
+        .sticky-form { position: sticky; top: 90px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04); background-color: var(--brand-white); }
+        .form-card { border-top: 5px solid var(--brand-navy); }
 
         /* Search Bar */
-        .search-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 350px;
-        }
-
-        .search-wrapper i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
+        .search-wrapper { position: relative; width: 100%; max-width: 350px; }
+        .search-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .search-wrapper input {
-            width: 100%;
-            padding: 10px 16px 10px 40px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            width: 100%; padding: 10px 16px 10px 40px; border-radius: 8px; border: 1px solid var(--border-color);
+            font-size: 0.95rem; transition: all 0.2s;
         }
-
-        .search-wrapper input:focus {
-            outline: none;
-            border-color: var(--brand-navy);
-            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
-        }
+        .search-wrapper input:focus { outline: none; border-color: var(--brand-navy); box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1); }
 
         /* Table Styling */
-        .table th {
-            background-color: #f8fafc;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            padding: 16px;
-            border-bottom: 2px solid var(--border-color);
-        }
+        .table th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; padding: 16px; border-bottom: 2px solid var(--border-color); }
+        .table td { padding: 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+        .table tbody tr:hover { background-color: #f8fafc; }
 
-        .table td {
-            padding: 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .table tbody tr:hover {
-            background-color: #f8fafc;
-        }
-
-        .ref-tag {
-            background-color: rgba(10, 36, 114, 0.08);
-            color: var(--brand-navy);
-            font-family: Consolas, monospace;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .diff-badge {
-            background-color: #f1f5f9;
-            color: var(--text-main);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: 1px solid var(--border-color);
-        }
+        .ref-tag { background-color: rgba(10, 36, 114, 0.08); color: var(--brand-navy); font-family: Consolas, monospace; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+        .diff-badge { background-color: #f1f5f9; color: var(--text-main); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border-color); }
 
         /* Add Button */
-        .btn-add {
-            background-color: rgba(10, 36, 114, 0.1);
-            color: var(--brand-navy);
-            border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn-add:hover {
-            background-color: var(--brand-navy);
-            color: var(--brand-white);
-        }
+        .btn-add { background-color: rgba(10, 36, 114, 0.1); color: var(--brand-navy); border: none; border-radius: 8px; padding: 6px 12px; font-weight: 600; transition: all 0.2s; }
+        .btn-add:hover:not(:disabled) { background-color: var(--brand-navy); color: var(--brand-white); }
+        
+        /* Disabled State for Add Button (Visual Lock) */
+        .btn-add:disabled { background-color: #e2e8f0; color: #64748b; cursor: not-allowed; opacity: 0.8; }
 
         /* Form Inputs */
-        .form-label {
-            color: var(--brand-navy);
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 0.95rem;
-            background-color: #f8fafc;
-            transition: all 0.2s;
-        }
-
-        .form-control:focus {
-            border-color: var(--brand-navy);
-            background-color: var(--brand-white);
-            box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1);
-        }
+        .form-label { color: var(--brand-navy); font-size: 0.9rem; margin-bottom: 6px; }
+        .form-control { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 15px; font-size: 0.95rem; background-color: #f8fafc; transition: all 0.2s; }
+        .form-control:focus { border-color: var(--brand-navy); background-color: var(--brand-white); box-shadow: 0 0 0 3px rgba(10, 36, 114, 0.1); outline: none; }
 
         /* Selected Items Queue */
-        .selected-item {
-            background: var(--brand-white);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--brand-navy);
-            transition: all 0.2s;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .selected-item:hover {
-            background: #fff0f0;
-            border-left-color: var(--brand-crimson);
-            border-color: #ffcccc;
-        }
-
-        .btn-remove-item {
-            color: var(--text-muted);
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 1.1rem;
-            transition: color 0.2s;
-        }
-
-        .selected-item:hover .btn-remove-item {
-            color: var(--brand-crimson);
-        }
+        .selected-item { background: var(--brand-white); border: 1px solid var(--border-color); border-left: 4px solid var(--brand-navy); transition: all 0.2s; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .selected-item:hover { background: #fff0f0; border-left-color: var(--brand-crimson); border-color: #ffcccc; }
+        .btn-remove-item { color: var(--text-muted); background: none; border: none; padding: 0; font-size: 1.1rem; transition: color 0.2s; }
+        .selected-item:hover .btn-remove-item { color: var(--brand-crimson); }
 
         /* Submit Button */
-        .btn-custom-crimson {
-            background-color: var(--brand-crimson);
-            color: var(--brand-white);
-            border: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            border-radius: 8px;
-        }
-
-        .btn-custom-crimson:hover:not(:disabled) {
-            background-color: #5a0b1f;
-            color: var(--brand-white);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(116, 15, 40, 0.2);
-        }
-
-        .btn-custom-crimson:disabled {
-            background-color: #cbd5e1;
-            cursor: not-allowed;
-        }
+        .btn-custom-crimson { background-color: var(--brand-crimson); color: var(--brand-white); border: none; font-weight: 600; transition: all 0.3s; border-radius: 8px; }
+        .btn-custom-crimson:hover:not(:disabled) { background-color: #5a0b1f; color: var(--brand-white); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(116, 15, 40, 0.2); }
+        .btn-custom-crimson:disabled { background-color: #cbd5e1; cursor: not-allowed; }
     </style>
 </head>
 
@@ -278,7 +126,7 @@
                 <a href="/admin" class="back-link" title="Back to Dashboard">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
+                        <polyline points="12 19 5 12 5"></polyline>
                     </svg>
                 </a>
 
@@ -325,7 +173,7 @@
                                 {% for q in questions %}
                                 <tr>
                                     <td class="ps-4">
-                                        <span class="ref-tag">#{{ q.id }}</span>
+                                        <span class="ref-tag">#{{ q.question_id }}</span>
                                     </td>
                                     <td>
                                         <span class="fw-bold text-dark">{{ q.title }}</span>
@@ -334,7 +182,7 @@
                                         <span class="diff-badge">{{ q.difficulty|default('Easy') }}</span>
                                     </td>
                                     <td class="text-end pe-4">
-                                        <button class="btn-add" onclick="addToQueue('{{ q.id }}', '{{ q.title|replace('\'', '\\\'') }}')" title="Add to Test">
+                                        <button type="button" id="add-btn-{{ q.id }}" class="btn-add" onclick="addToQueue('{{ q.id }}', '{{ q.title|replace('\'', '\\\'') }}', '{{ q.question_id }}')" title="Add to Test">
                                             <i class="bi bi-plus-lg"></i> Add
                                         </button>
                                     </td>
@@ -392,7 +240,6 @@
     <script>
         let selectedQuestions = new Set();
 
-        // Toast Notification Config
         const Toast = Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -401,11 +248,12 @@
             timerProgressBar: true
         });
 
-        function addToQueue(id, title) {
+        // FIX: Added display_id parameter to show custom ID in queue
+        function addToQueue(id, title, display_id) {
             if (selectedQuestions.has(id)) {
                 Toast.fire({
                     icon: 'info',
-                    title: 'Question already added to the test!'
+                    title: 'Question already added!'
                 });
                 return; 
             }
@@ -414,13 +262,19 @@
             document.getElementById('empty-msg').style.display = 'none';
             document.getElementById('submit-btn').disabled = false;
 
+            const btnElement = document.getElementById(`add-btn-${id}`);
+            if (btnElement) {
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<i class="bi bi-check2"></i> Added';
+            }
+
             const list = document.getElementById('selected-list');
             const item = document.createElement('div');
             item.className = 'selected-item shadow-sm';
             item.id = `queued-${id}`;
             item.innerHTML = `
                 <div class="small fw-bold text-dark text-truncate pe-2" style="max-width: 220px;" title="${title}">
-                    ${title}
+                    <span class="text-muted me-1">[${display_id}]</span> ${title}
                 </div>
                 <input type="hidden" name="question_ids[]" value="${id}">
                 <button type="button" class="btn-remove-item" onclick="removeFromQueue('${id}')" title="Remove from test">
@@ -430,7 +284,6 @@
             list.appendChild(item);
             updateCount();
 
-            // Optional visual feedback
             Toast.fire({
                 icon: 'success',
                 title: 'Added to test queue'
@@ -440,6 +293,12 @@
         function removeFromQueue(id) {
             selectedQuestions.delete(id);
             document.getElementById(`queued-${id}`).remove();
+
+            const btnElement = document.getElementById(`add-btn-${id}`);
+            if (btnElement) {
+                btnElement.disabled = false;
+                btnElement.innerHTML = '<i class="bi bi-plus-lg"></i> Add';
+            }
 
             if (selectedQuestions.size === 0) {
                 document.getElementById('empty-msg').style.display = 'block';
@@ -459,18 +318,14 @@
             const rows = document.querySelectorAll("#question_table tbody tr");
             
             rows.forEach(row => {
-                // Prevent hiding the "Empty state" row if no questions exist
-                if(row.getElementsByTagName("td").length === 1) return;
-                
+                if(row.getElementsByTagName("td").length === 1) return; // skip empty state row
                 row.style.display = row.textContent.toLowerCase().includes(input) ? "" : "none";
             });
         }
 
-        // Intercept form submission to add a confirmation modal
         function confirmSubmission() {
             const titleInput = document.querySelector('input[name="test_title"]').value;
             
-            // Basic HTML5 validation check for the title field
             if(!titleInput.trim()) {
                 document.querySelector('input[name="test_title"]').reportValidity();
                 return;
@@ -481,12 +336,11 @@
                 html: `You are about to create the test <strong>"${titleInput}"</strong> containing <strong>${selectedQuestions.size}</strong> questions.`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#0A2472', // Navy
+                confirmButtonColor: '#0A2472',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Create it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading state
                     Swal.fire({
                         title: 'Saving...',
                         allowOutsideClick: false,
@@ -494,7 +348,6 @@
                             Swal.showLoading();
                         }
                     });
-                    // Actually submit the form
                     document.getElementById('bulk-form').submit();
                 }
             });

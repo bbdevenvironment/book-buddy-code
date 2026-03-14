@@ -228,16 +228,6 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(116, 15, 40, 0.3);
         }
-
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .styled-form {
-                padding: 25px 20px;
-            }
-            .form-section {
-                padding: 20px 15px;
-            }
-        }
     </style>
 </head>
 
@@ -246,7 +236,7 @@
     <nav class="navbar sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <a href="/admin/total-questions" class="back-link" title="Back to Questions">
+                <a href="/show_all_questions" class="back-link" title="Back to Questions">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
@@ -263,26 +253,41 @@
     </nav>
 
     <main class="main-container">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% set alert_class = 'success' if category == 'success' else 'danger' %}
+                    <div class="alert alert-{{ alert_class }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="styled-form">
-            
             <header class="form-header">
                 <span class="edit-badge">Edit Mode</span>
                 <h1>Update Challenge</h1>
                 <p class="text-muted mt-2">Modifying Question ID: <span class="qid-display">{{ questions.question_id }}</span></p>
             </header>
 
-            <form action="/new_question" method="post">
-                <input type="hidden" name="question_id" value="{{ questions.question_id }}">
+            <form action="{{ url_for('update_question', id=questions.id) }}" method="post">
                 
                 <div class="form-section">
                     <h3 class="section-title">General Information</h3>
                     
                     <div class="row g-3 mb-3">
-                        <div class="col-md-8">
-                            <label class="form-label">Question Title</label>
-                            <input type="text" name="title" class="form-control" value="{{ questions.title }}" required placeholder="e.g. Array Summation">
+                        <div class="col-md-3">
+                            <label class="form-label">Question ID</label>
+                            <input type="text" name="question_id" class="form-control fw-bold text-primary" value="{{ questions.question_id }}" required>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Question Title</label>
+                            <input type="text" name="title" class="form-control" value="{{ questions.title }}" required>
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label">Difficulty Level</label>
                             <select name="difficulty" class="form-select" required>
                                 <option value="Easy" {% if questions.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
@@ -367,7 +372,6 @@
         function addTestCase() {
             const container = document.getElementById('test-cases-container');
             const newCase = document.createElement('div');
-            // Using the exact same classes as the Jinja2 loop above
             newCase.className = 'test-case-item rounded-3 p-4 mb-3 shadow-sm';
             newCase.innerHTML = `
                 <div class="row g-3">
@@ -385,20 +389,18 @@
                 </div>
             `;
             container.appendChild(newCase);
-            
-            // Smooth scroll to the new test case
             newCase.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function removeTestCase(btn) {
+        function removeTestCase(button) {
             const container = document.getElementById('test-cases-container');
             if (container.children.length > 1) {
-                btn.closest('.test-case-item').remove();
+                button.closest('.test-case-item').remove();
             } else {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Cannot Remove',
-                    text: 'At least one test case is required for a valid challenge.',
+                    text: 'You must provide at least one test case for the question.',
                     confirmButtonColor: '#0A2472'
                 });
             }

@@ -20,23 +20,8 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* SCROLL FIX: Strict flexbox layout to allow independent scrolling */
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-light); 
-            color: var(--text-main); 
-            height: 100vh; /* Lock body height to viewport */
-            overflow: hidden; /* Stop outer page bouncing */
-            display: flex; 
-            flex-direction: column; 
-        }
-
-        /* --- TOP NAVIGATION --- */
-        .top-nav { 
-            background: var(--brand-white); border-bottom: 1px solid var(--border-color); 
-            padding: 0 2rem; height: 75px; display: flex; justify-content: space-between; 
-            align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); z-index: 100; flex-shrink: 0; 
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-light); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .top-nav { background: var(--brand-white); border-bottom: 1px solid var(--border-color); padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); z-index: 100; flex-shrink: 0; }
         .brand-wrapper { display: flex; align-items: center; gap: 12px; }
         .brand-wrapper img { height: 35px; object-fit: contain; }
         .brand-name { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--brand-navy); letter-spacing: 0.5px; }
@@ -46,20 +31,9 @@
         .timer-warning { background: var(--brand-crimson); animation: pulse-danger 1.5s infinite; }
         @keyframes pulse-danger { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        /* --- MAIN LAYOUT --- */
-        .test-wrapper { 
-            display: flex; 
-            flex: 1; 
-            height: calc(100vh - 75px); /* Take exactly the remaining screen height */
-            overflow: hidden; 
-        }
+        .test-wrapper { display: flex; flex: 1; overflow: hidden; } 
         
-        /* --- SIDEBAR NAVIGATOR --- */
-        .question-nav { 
-            width: 300px; background: var(--brand-white); border-right: 1px solid var(--border-color); 
-            display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; 
-            overflow-y: auto; /* Allow sidebar to scroll */
-        }
+        .question-nav { width: 300px; background: var(--brand-white); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; overflow-y: auto; }
         .nav-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
         .nav-header h3 { font-size: 1rem; font-weight: 800; color: var(--brand-navy); margin-bottom: 1rem; text-transform: uppercase; }
         .progress-stats { background: #f1f5f9; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; }
@@ -72,7 +46,7 @@
         .nav-question:hover { border-color: #cbd5e1; background: #f8fafc; }
         .nav-question.active { border-color: var(--brand-navy); background: #f1f5f9; border-left: 4px solid var(--brand-navy); }
         .nav-question.solved { border-left: 4px solid var(--success-color); }
-        .nav-question.attempted { border-left: 4px solid var(--warning-color); }
+        .nav-question.attempted { border-left: 4px solid var(--warning-color); } 
 
         .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
         .q-number { font-weight: 700; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
@@ -82,16 +56,9 @@
         .q-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--brand-navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .q-points { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
 
-        /* --- MAIN CONTENT AREA --- */
-        .main-content { 
-            flex: 1; 
-            overflow-y: auto; /* ALLOWS CONTENT SCROLLING */
-            padding: 2rem; 
-            background: var(--bg-light); 
-        } 
+        .main-content { flex: 1; overflow-y: auto; padding: 2rem; background: var(--bg-light); } 
         .main-content::-webkit-scrollbar { width: 8px; }
         .main-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        
         .question-container { display: none; animation: fadeIn 0.3s ease-in-out; }
         .question-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -256,7 +223,7 @@
                             <option value="java">Java</option>
                         </select>
                     </div>
-                    <div class="editor-container" id="editor-container-{{ question.id }}">
+                    <div class="editor-container code-editor-block" id="editor-container-{{ question.id }}">
                         <div id="editor-{{ question.id }}" style="height: 100%; width: 100%;"></div>
                     </div>
                     <input type="hidden" id="code-{{ question.id }}" name="code_{{ question.id }}">
@@ -306,35 +273,21 @@
     <script>
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         
-        // ANTI-CHEAT FIX: ONLY disable copy, paste, cut, and Ctrl+A INSIDE the Monaco Editor wrapper.
-        // It leaves the rest of the page (Output, Input, Questions) completely normal.
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.editor-container').forEach(container => {
-                
+            document.querySelectorAll('.code-editor-block').forEach(container => {
                 container.addEventListener('paste', e => { 
                     e.preventDefault(); e.stopPropagation();
-                    Toast.fire({icon: 'warning', title: 'Pasting is disabled inside the editor.'}); 
+                    Toast.fire({icon: 'warning', title: 'Pasting is disabled in the editor.'}); 
                 }, true);
-                
                 container.addEventListener('cut', e => { 
                     e.preventDefault(); e.stopPropagation();
-                    Toast.fire({icon: 'warning', title: 'Cutting is disabled inside the editor.'}); 
+                    Toast.fire({icon: 'warning', title: 'Cutting is disabled.'}); 
                 }, true);
-
-                container.addEventListener('copy', e => { 
-                    e.preventDefault(); e.stopPropagation();
-                    Toast.fire({icon: 'warning', title: 'Copying code from the editor is disabled.'}); 
-                }, true);
-
                 container.addEventListener('keydown', e => {
                     if (e.ctrlKey && (e.key === 'a' || e.key === 'A')) {
                         e.preventDefault(); e.stopPropagation();
-                        Toast.fire({icon: 'warning', title: 'Select All is disabled inside the editor.'});
+                        Toast.fire({icon: 'warning', title: 'Select All is disabled.'});
                     }
-                }, true);
-                
-                container.addEventListener('contextmenu', e => {
-                    e.preventDefault(); e.stopPropagation();
                 }, true);
             });
         });
@@ -344,6 +297,8 @@
         const editors = {};
         const codeState = {};
         const questionStatus = {};
+        
+        // PASSING TEST CASES TO JAVASCRIPT
         const testCases = {
             {% for question in questions %}
             {{ question.id }}: {
@@ -363,15 +318,12 @@
 
         {% if test.end_time %}
         const endTime = new Date("{{ test.end_time.strftime('%Y-%m-%d %H:%M:%S') }}").getTime();
-        
         function updateTimer() {
             const now = new Date().getTime();
             const distance = endTime - now;
-            
             if (distance < 0) {
                 document.getElementById('timer').innerHTML = "<i class='bi bi-clock-history'></i> TEST ENDED";
                 document.getElementById('timer').classList.add('timer-warning');
-                
                 const submitBtn = document.getElementById('submitTestBtn');
                 if(submitBtn) {
                     submitBtn.innerHTML = "<i class='bi bi-lock-fill'></i> Submissions Closed";
@@ -379,17 +331,11 @@
                 }
                 return;
             }
-            
             const hours = Math.floor(distance / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById('timer').innerHTML = 
-                `<i class="bi bi-stopwatch"></i> ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            if (distance < 300000) { 
-                document.getElementById('timer').classList.add('timer-warning');
-            }
+            document.getElementById('timer').innerHTML = `<i class="bi bi-stopwatch"></i> ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            if (distance < 300000) document.getElementById('timer').classList.add('timer-warning');
         }
         setInterval(updateTimer, 1000);
         {% endif %}
@@ -426,25 +372,18 @@
         function switchQuestion(questionId) {
             document.querySelectorAll('.question-container').forEach(el => el.classList.remove('active'));
             document.getElementById(`question-${questionId}`).classList.add('active');
-            
             document.querySelectorAll('.nav-question').forEach(el => el.classList.remove('active'));
             document.getElementById(`nav-${questionId}`).classList.add('active');
         }
 
         {% if questions %}
-        document.addEventListener('DOMContentLoaded', function() {
-            switchQuestion({{ questions[0].id }});
-        });
+        document.addEventListener('DOMContentLoaded', function() { switchQuestion({{ questions[0].id }}); });
         {% endif %}
 
         function changeLanguage(questionId, lang) {
             const editor = editors[questionId];
             const currentLang = document.getElementById(`lang-${questionId}`).getAttribute('data-prev') || 'python';
-            
-            if (!codeState[questionId][currentLang]) {
-                codeState[questionId][currentLang] = editor.getValue();
-            }
-            
+            if (!codeState[questionId][currentLang]) codeState[questionId][currentLang] = editor.getValue();
             monaco.editor.setModelLanguage(editor.getModel(), lang === 'cpp' ? 'cpp' : lang);
             editor.setValue(codeState[questionId][lang] || getDefaultCode(lang));
             document.getElementById(`lang-hidden-${questionId}`).value = lang;
@@ -468,13 +407,7 @@
             const lang = document.getElementById(`lang-${questionId}`).value;
             const input = document.getElementById(`custom-input-${questionId}`).value;
             
-            // FIX: Warn user if custom input is empty before running
-            if (input.trim() === '') {
-                Toast.fire({
-                    icon: 'info', 
-                    title: 'Suggestion: Please provide custom input if your code expects it.'
-                });
-            }
+            if (input.trim() === '') Toast.fire({ icon: 'info', title: 'Running without custom input...' });
 
             outputElem.innerHTML = "<span class='spinner-custom' style='display:inline-block; border-top-color:var(--brand-navy); border-right-color:var(--brand-navy); border-bottom-color:var(--brand-navy); width:15px; height:15px; border-width:2px; margin-right:5px;'></span> Executing...";
             
@@ -516,9 +449,7 @@
                     const data = await response.json();
                     const isCorrect = normalize(data.output) === normalize(test.expected) && !data.error;
                     
-                    if (isCorrect) {
-                        passed++;
-                    }
+                    if (isCorrect) passed++;
                     
                     const div = document.createElement('div');
                     div.style.padding = '10px 15px';
@@ -526,10 +457,32 @@
                     div.style.borderRadius = '6px';
                     div.style.fontSize = '0.85rem';
                     div.style.fontWeight = '600';
-                    div.style.background = isCorrect ? '#ecfdf5' : '#fef2f2';
-                    div.style.color = isCorrect ? '#065f46' : '#991b1b';
-                    div.style.border = `1px solid ${isCorrect ? '#a7f3d0' : '#fecaca'}`;
-                    div.innerHTML = `<i class="bi ${isCorrect ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2"></i> Test Case #${test.id} : ${isCorrect ? 'Passed' : 'Failed'}`;
+                    
+                    if (isCorrect) {
+                        div.style.background = '#ecfdf5';
+                        div.style.color = '#065f46';
+                        div.style.border = '1px solid #a7f3d0';
+                        div.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> Test Case #${test.id} : Passed`;
+                    } else {
+                        div.style.background = '#fef2f2';
+                        div.style.color = '#991b1b';
+                        div.style.border = '1px solid #fecaca';
+                        
+                        // ANTI-CHEAT LOGIC: Hide expected output if it's a hidden test case
+                        if (test.is_sample) {
+                            div.innerHTML = `
+                                <i class="bi bi-x-circle-fill me-2"></i> Sample Test Case #${test.id} : Failed
+                                <div class="mt-2 small text-muted font-monospace" style="background:#fff; padding:8px; border-radius:4px; border:1px solid #fca5a5;">
+                                    <strong>Input:</strong> ${test.input}<br>
+                                    <strong>Expected:</strong> ${test.expected}<br>
+                                    <strong class="text-danger">Your Output:</strong> ${data.output || data.error}
+                                </div>
+                            `;
+                        } else {
+                            div.innerHTML = `<i class="bi bi-shield-lock-fill me-2"></i> Hidden Test Case #${test.id} : Failed (Output is hidden)`;
+                        }
+                    }
+                    
                     resultsElem.appendChild(div);
                     
                 } catch (error) {
@@ -545,7 +498,8 @@
                 }
             }
             
-            const isSolved = passed > 0;
+            // Logic for "Solved" vs "Attempted" (Must pass ALL test cases to be Solved)
+            const isSolved = passed === testCasesList.length;
             questionStatus[questionId].solved = isSolved;
             questionStatus[questionId].passed = passed;
             
@@ -577,10 +531,7 @@
             resultsElem.appendChild(summary);
         }
 
-        function normalize(str) {
-            return str ? str.toString().trim().replace(/\r\n/g, "\n") : "";
-        }
-
+        function normalize(str) { return str ? str.toString().trim().replace(/\r\n/g, "\n") : ""; }
         function updateSolvedCount() {
             const solved = Object.values(questionStatus).filter(q => q.solved).length;
             document.getElementById('solved-count').textContent = solved;
@@ -597,15 +548,12 @@
                 confirmButtonText: 'Yes, Submit Test',
                 cancelButtonText: 'Continue Coding'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    executeSubmission();
-                }
+                if (result.isConfirmed) executeSubmission();
             });
         }
 
         async function executeSubmission() {
             const submitBtn = document.getElementById('submitTestBtn');
-            
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-custom"></span> Submitting...';
             
@@ -613,7 +561,6 @@
                 {% for question in questions %}
                 const code{{ question.id }} = editors[{{ question.id }}].getValue();
                 const lang{{ question.id }} = document.getElementById(`lang-hidden-{{ question.id }}`).value;
-                
                 document.getElementById(`hidden-code-{{ question.id }}`).value = code{{ question.id }};
                 document.getElementById(`hidden-lang-{{ question.id }}`).value = lang{{ question.id }};
                 {% endfor %}

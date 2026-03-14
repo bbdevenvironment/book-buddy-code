@@ -1,0 +1,38 @@
+=== TEST RESULT REPORT ===
+Student: Student B (Reg: REG-B)
+Test: 1
+Final Score: 0 / 30
+Status: FAILED
+Submitted At: 2026-03-14 10:59:32
+=========================
+
+Question: Arun
+Language: python
+Test Cases Passed: 0/2
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+
+Question: Sum of Two Numbers
+Language: python
+Test Cases Passed: 0/2
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+
+Question: Even or Odd
+Language: python
+Test Cases Passed: 0/2
+Marks: 0/10
+---
+Code Submitted:
+# Write your solution here
+
+...
+
