@@ -13,6 +13,7 @@ import tempfile
 from sqlalchemy.exc import IntegrityError 
 import csv
 import io
+import pytz
 
 
 app = Flask(__name__)
@@ -34,16 +35,22 @@ migrate = Migrate(app, db)
 login_manager.login_view = 'student_login'
 
 # ==================== TIMEZONE HELPER (IST - CHENNAI) ====================
-IST_TZ = timezone(timedelta(hours=5, minutes=30), 'IST')
+# Add this wherever you need to check the current time in your routes
+ist = pytz.timezone('Asia/Kolkata')
+current_time_ist = datetime.now(ist)
+
+# For example, if you are passing 'now' to a template:
+# return render_template('admin.html', grouped_tests=grouped_tests, now=current_time_ist)
 
 def ist_now():
     """Forces the application to use exact Indian Standard Time (Chennai)."""
-    return datetime.now(IST_TZ).replace(tzinfo=None)
+    return datetime.now(ist).replace(tzinfo=None)
 
 @app.context_processor
 def inject_now():
     """Injects IST time into all HTML templates automatically"""
     return {'now': ist_now()}
+
 
 # ==================== DATABASE MODELS ====================
 
