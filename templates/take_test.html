@@ -106,7 +106,6 @@
         .test-results { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; max-height: 250px; overflow-y: auto; }
         .output-console { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.85rem; min-height: 120px; max-height: 250px; overflow-y: auto; margin: 0; }
         
-        /* HTML iframe preview box */
         .html-preview-box { display: none; width: 100%; height: 350px; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
 
         .submit-test-btn { position: fixed; bottom: 2rem; right: 2rem; background-color: var(--brand-crimson); color: var(--brand-white); padding: 1rem 2rem; border: none; border-radius: 100px; font-weight: 700; font-size: 1.05rem; cursor: pointer; box-shadow: 0 8px 20px rgba(116, 15, 40, 0.3); transition: all 0.3s; z-index: 1000; display: flex; align-items: center; gap: 10px; }
@@ -288,11 +287,11 @@
 
     <script>
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-        
-        // UNIQUE CACHE PREFIX
         const cachePrefix = `bookbuddy_${'{{ student.username }}'}_test${'{{ test.id }}'}`;
-        
         const supportedLangs = ['python', 'c', 'cpp', 'java', 'javascript', 'html', 'sql'];
+
+        // --- NEW: GLOBAL SUBMIT FLAG ---
+        let isSubmitting = false;
 
         require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
 
@@ -319,28 +318,78 @@
 
         {% if test.end_time %}
         const endTime = new Date("{{ test.end_time.strftime('%Y-%m-%d %H:%M:%S') }}").getTime();
+        let timerInterval = setInterval(updateTimer, 1000);
+
         function updateTimer() {
             const now = new Date().getTime();
             const distance = endTime - now;
+            
             if (distance < 0) {
-                document.getElementById('timer').innerHTML = "<i class='bi bi-clock-history'></i> TEST ENDED";
+                clearInterval(timerInterval);
+                document.getElementById('timer').innerHTML = "<i class='bi bi-clock-history'></i> TIME'S UP!";
                 document.getElementById('timer').classList.add('timer-warning');
-                const submitBtn = document.getElementById('submitTestBtn');
-                if(submitBtn) {
-                    submitBtn.innerHTML = "<i class='bi bi-lock-fill'></i> Submissions Closed";
-                    submitBtn.disabled = true;
+                
+                // === FEATURE 1: FORCE SUBMIT ON TIME OUT ===
+                if (!isSubmitting) {
+                    Swal.fire({
+                        title: "Time's Up!",
+                        text: "Your assessment time has expired. Auto-submitting your code now...",
+                        icon: "info",
+                        allowOutsideClick: false,
+                        showConfirmButton: false
+                    });
+                    executeSubmission();
                 }
                 return;
             }
+            
             const hours = Math.floor(distance / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             document.getElementById('timer').innerHTML = `<i class="bi bi-stopwatch"></i> ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             if (distance < 300000) document.getElementById('timer').classList.add('timer-warning');
         }
-        setInterval(updateTimer, 1000);
         {% endif %}
 
+        // === FEATURE 2: AUTO SUBMIT ON TAB CLOSE ===
+        
+        // Step A: Show browser warning if they try to refresh/close
+        window.addEventListener('beforeunload', function (e) {
+            if (!isSubmitting) {
+                e.preventDefault();
+                e.returnValue = ''; // This triggers the standard browser "Leave Site?" prompt
+            }
+        });
+
+        // Step B: If they forcibly close the tab anyway, silently submit the form data in the background
+        window.addEventListener('pagehide', function() {
+            if (!isSubmitting) {
+                populateHiddenFields();
+                const formData = new FormData(document.getElementById('test-submit-form'));
+                
+                // Fetch keepalive is a modern feature allowing requests to complete even after the page dies
+                fetch('{{ url_for("submit_test") }}', {
+                    method: 'POST',
+                    body: formData,
+                    keepalive: true
+                });
+            }
+        });
+
+        // Helper function to load current code into the hidden form before submitting
+        function populateHiddenFields() {
+            {% for question in questions %}
+            if (editors[{{ question.id }}]) {
+                const finalCode = editors[{{ question.id }}].getValue();
+                const finalLang = document.getElementById(`lang-hidden-{{ question.id }}`).value;
+                document.getElementById(`hidden-code-{{ question.id }}`).value = finalCode;
+                document.getElementById(`hidden-lang-{{ question.id }}`).value = finalLang;
+            }
+            {% endfor %}
+        }
+
+
+        // INITIALIZE EDITORS
         require(["vs/editor/editor.main"], function () {
             {% for question in questions %}
             (function() {
@@ -406,12 +455,10 @@
         document.addEventListener('DOMContentLoaded', function() { switchQuestion({{ questions[0].id }}); });
         {% endif %}
 
-        // FIX: The exact race condition when switching tabs is resolved here
         function changeLanguage(questionId, newLang) {
             const editor = editors[questionId];
             const currentLang = document.getElementById(`lang-${questionId}`).getAttribute('data-prev') || 'python';
             
-            // 1. Save old state manually before switching
             codeState[questionId][currentLang] = editor.getValue();
             localStorage.setItem(`${cachePrefix}_q${questionId}_${currentLang}`, editor.getValue());
 
@@ -419,11 +466,9 @@
             if (newLang === 'c' || newLang === 'cpp') monacoLang = 'cpp';
             monaco.editor.setModelLanguage(editor.getModel(), monacoLang);
             
-            // 2. Update tracking values FIRST to prevent onChange bugs
             document.getElementById(`lang-hidden-${questionId}`).value = newLang;
             document.getElementById(`lang-${questionId}`).setAttribute('data-prev', newLang);
 
-            // 3. Inject new code
             const newCode = codeState[questionId][newLang] || getDefaultCode(newLang);
             editor.setValue(newCode);
         }
@@ -449,7 +494,6 @@
             const lang = document.getElementById(`lang-${questionId}`).value;
             const input = document.getElementById(`custom-input-${questionId}`).value;
             
-            // FIX: If HTML, render an actual browser iframe preview instantly!
             if (lang === 'html') {
                 outputElem.style.display = 'none';
                 htmlPreview.style.display = 'block';
@@ -464,7 +508,6 @@
                 return;
             }
 
-            // Normal Execution
             outputElem.style.display = 'block';
             htmlPreview.style.display = 'none';
 
@@ -487,7 +530,6 @@
         async function testQuestion(questionId) {
             const lang = document.getElementById(`lang-${questionId}`).value;
             
-            // Cannot run test cases on raw HTML
             if (lang === 'html') {
                 Swal.fire('Not Supported', 'Test Cases cannot be executed against visual HTML/CSS. Please use "Run Code" to view your output.', 'info');
                 return;
@@ -617,29 +659,26 @@
         }
 
         async function executeSubmission() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+
             const submitBtn = document.getElementById('submitTestBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-custom"></span> Submitting...';
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-custom"></span> Submitting...';
+            }
             
             try {
-                {% for question in questions %}
-                const code{{ question.id }} = editors[{{ question.id }}].getValue();
-                const lang{{ question.id }} = document.getElementById(`lang-hidden-{{ question.id }}`).value;
-                document.getElementById(`hidden-code-{{ question.id }}`).value = code{{ question.id }};
-                document.getElementById(`hidden-lang-{{ question.id }}`).value = lang{{ question.id }};
-                {% endfor %}
-                
+                populateHiddenFields();
                 document.getElementById('test-submit-form').submit();
-                
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bi bi-check2-circle fs-5"></i> Final Submit';
-                }, 5000);
                 
             } catch (error) {
                 Swal.fire('Error', 'Failed to submit test. Please check your connection.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-check2-circle fs-5"></i> Final Submit';
+                isSubmitting = false;
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-check2-circle fs-5"></i> Final Submit';
+                }
             }
         }
     </script>

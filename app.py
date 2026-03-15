@@ -581,15 +581,31 @@ def add_test():
     return redirect(url_for('test_maintain'))
 
 @app.route('/test_maintain')
+@login_required
 def test_maintain():
     all_entries = Testmaintain.query.all()
-    now = ist_now()
+    
+    # Use your existing time function here (like datetime.now() or ist_now())
+    now = datetime.now() 
+    
+    # CRITICAL FIX: Fetch all questions and link them to the test entries
+    questions_dict = {q.id: q for q in Question.query.all()}
+    
     for entry in all_entries:
+        # Update expired tests to 'completed'
         if entry.status == 'live' and entry.end_time and now > entry.end_time:
             entry.status = 'completed'
+            
+        # Attach the actual Question data so the HTML can read it!
+        entry.question = questions_dict.get(entry.question_id)
+        
     db.session.commit()
+    
+    # Group by test title
     grouped_tests = defaultdict(list)
-    for entry in all_entries: grouped_tests[entry.test_title].append(entry)
+    for entry in all_entries: 
+        grouped_tests[entry.test_title].append(entry)
+        
     return render_template('test_maintain.html', grouped_tests=grouped_tests, now=now)
 
 
