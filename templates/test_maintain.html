@@ -70,6 +70,7 @@
 </head>
 
 <body>
+    <input type="hidden" id="server-current-time" value="{{ now.strftime('%Y-%m-%dT%H:%M:%S') }}">
 
     <nav class="navbar sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
@@ -306,12 +307,25 @@
             updateTestStatuses();
         }
 
-        // FIX: Simplified Status Calculation relying entirely on Local Browser Time
+        // FIX: Re-introduced Server Time Synchronization.
+        // This ensures the Javascript clock matches the exact IST time your Python server is running on.
+        const serverTimeStr = document.getElementById('server-current-time').value;
+        
+        // Treat both the server time and browser time as raw strings to calculate the offset safely
+        const serverDateParts = serverTimeStr.split(/[-T:]/);
+        const serverDate = new Date(serverDateParts[0], serverDateParts[1] - 1, serverDateParts[2], serverDateParts[3], serverDateParts[4], serverDateParts[5]);
+        const clientDate = new Date();
+        const timeOffset = serverDate.getTime() - clientDate.getTime();
+
+        function getAccurateServerTime() {
+            return new Date(new Date().getTime() + timeOffset);
+        }
+
         function updateTestStatuses() {
             const cardsCount = document.querySelectorAll('[id^="badge-container-"]').length;
             
-            // This grabs the exact time of the computer viewing the webpage
-            const now = new Date(); 
+            // Now strictly comparing against the synced IST time
+            const now = getAccurateServerTime(); 
             let visibleCount = 0;
 
             for(let i = 1; i <= cardsCount; i++) {
@@ -330,9 +344,12 @@
                     calculatedCategory = 'draft'; borderClass = 'status-border-draft';
                     if(resultsBtn) resultsBtn.style.display = 'none';
                 } else {
-                    // Browser treats this string "YYYY-MM-DDTHH:MM" as local time automatically
-                    const startTime = new Date(startStr);
-                    const endTime = new Date(endStr);
+                    // Safely parse the DB string into a JS date matching the server's timezone perspective
+                    const sParts = startStr.split(/[-T:]/);
+                    const eParts = endStr.split(/[-T:]/);
+                    
+                    const startTime = new Date(sParts[0], sParts[1] - 1, sParts[2], sParts[3], sParts[4]);
+                    const endTime = new Date(eParts[0], eParts[1] - 1, eParts[2], eParts[3], eParts[4]);
 
                     if (now < startTime) {
                         badgeHTML = `<span class="badge badge-upcoming px-3 py-2"><i class="bi bi-calendar-event me-1"></i> UPCOMING</span>`;
