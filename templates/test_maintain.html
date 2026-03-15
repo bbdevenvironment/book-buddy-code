@@ -154,7 +154,7 @@
 
         /* Buttons */
         .btn-custom-navy { background-color: var(--brand-navy); color: var(--brand-white); border: none; font-weight: 600; transition: all 0.3s; }
-        .btn-custom-navy:hover:not(:disabled) { background-color: #071952; color: var(--brand-white); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2); }
+        .btn-custom-navy:hover { background-color: #071952; color: var(--brand-white); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(10, 36, 114, 0.2); }
         .btn-outline-navy { color: var(--brand-navy); border: 1px solid var(--brand-navy); font-weight: 600; transition: all 0.2s; background-color: transparent; }
         .btn-outline-navy:hover { background-color: var(--brand-navy); color: var(--brand-white); }
         .modal-header-navy { background-color: var(--brand-navy); color: var(--brand-white); border-bottom: none; }
@@ -244,7 +244,7 @@
                     <input type="hidden" id="start-{{ loop.index }}" value="{{ first_entry.start_time.strftime('%Y-%m-%dT%H:%M:%S') if first_entry.start_time else '' }}">
                     <input type="hidden" id="end-{{ loop.index }}" value="{{ first_entry.end_time.strftime('%Y-%m-%dT%H:%M:%S') if first_entry.end_time else '' }}">
 
-                    <div class="col-md-6 test-card-col" id="test-col-{{ loop.index }}" style="order: -{{ first_entry.id }};">
+                    <div class="col-md-6 test-card-col" id="test-col-{{ loop.index }}">
                         <div class="card test-card" id="card-{{ loop.index }}">
                             <div class="card-body p-4 d-flex flex-column h-100">
                                 
@@ -279,14 +279,13 @@
                                 </div>
 
                                 <div class="mb-4">
-                                    <div class="text-muted small mb-2">
+                                    <div class="text-muted small mb-1">
+                                        <i class="bi bi-clock-history me-1"></i>
                                         {% if first_entry.start_time %}
-                                            <div class="d-flex flex-column gap-1">
-                                                <span><i class="bi bi-play-circle text-success me-1"></i> <strong class="text-dark">Start:</strong> {{ first_entry.start_time.strftime('%d %b %Y, %I:%M %p') }}</span>
-                                                <span><i class="bi bi-stop-circle text-danger me-1"></i> <strong class="text-dark">End:&nbsp;&nbsp;</strong> {{ first_entry.end_time.strftime('%d %b %Y, %I:%M %p') }}</span>
-                                            </div>
+                                            <span>{{ first_entry.start_time.strftime('%b %d, %I:%M %p') }}</span> - 
+                                            <span>{{ first_entry.end_time.strftime('%I:%M %p') }}</span>
                                         {% else %}
-                                            <span class="text-danger fw-bold"><i class="bi bi-clock-history me-1"></i> Draft: Schedule Not Set</span>
+                                            <span class="text-danger fw-bold">Draft: Schedule Not Set</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -302,7 +301,7 @@
                                                     <i class="bi bi-code-square"></i>
                                                 </div>
                                                 <div>
-                                                    <span class="d-block fw-bold text-dark mb-0">#{{ entry.question.question_id }} - {{ entry.question.title }}</span>
+                                                    <span class="d-block fw-bold text-dark mb-0">Question ID: {{ entry.question_id }}</span>
                                                     <span class="badge bg-light text-secondary border border-secondary-subtle font-monospace mt-1" style="font-size: 0.65rem;">Programming Task</span>
                                                 </div>
                                             </div>
@@ -359,7 +358,7 @@
                                 </div>
                                 <div class="modal-footer border-0 pt-0 px-4 pb-4 d-flex justify-content-between">
                                     <button type="button" class="btn btn-light px-4 border fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-custom-navy px-4 shadow-sm submit-timing-btn">Save Timings</button>
+                                    <button type="submit" class="btn btn-custom-navy px-4 shadow-sm">Save Timings</button>
                                 </div>
                             </form>
                         </div>
@@ -379,36 +378,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Force refresh if the browser tries to load a stale, cached page from back/forward history
-        window.addEventListener("pageshow", function (event) {
-            const historyTraversal = event.persisted || 
-                                    (typeof window.performance != "undefined" && 
-                                        window.performance.navigation.type === 2);
-            if (historyTraversal) {
-                window.location.reload();
-            }
-        });
-
-        // Prevent double submissions on schedule update
-        document.querySelectorAll('.time-update-form').forEach(form => {
-            form.addEventListener('submit', function() {
-                const btn = this.querySelector('.submit-timing-btn');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+        // Formatter Backup: Still strips seconds dynamically if the browser tries to add them
+        document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.value && this.value.length > 16) {
+                    this.value = this.value.substring(0, 16);
                 }
-                
-                // Backup format stripper
-                const startInput = this.querySelector('input[name="start_time"]');
-                const endInput = this.querySelector('input[name="end_time"]');
-                if (startInput && startInput.value.length > 16) startInput.value = startInput.value.substring(0, 16);
-                if (endInput && endInput.value.length > 16) endInput.value = endInput.value.substring(0, 16);
             });
         });
 
-        // 2. SERVER TIME SYNC: +05:30 ensures the Javascript natively understands the string is in IST timezone!
+        // 2. SERVER TIME SYNC: Creates a perfect synced clock with the Python server timezone
         const serverTimeStr = document.getElementById('server-current-time').value;
-        const serverDate = new Date(serverTimeStr + "+05:30");
+        const serverDate = new Date(serverTimeStr);
         const clientDate = new Date();
         const timeOffset = serverDate.getTime() - clientDate.getTime();
 
@@ -456,9 +437,8 @@
                     if(resultsBtn) resultsBtn.style.display = 'none';
                 } 
                 else {
-                    // FIX: Added +05:30 here too so browser perfectly understands it's Indian Standard Time
-                    const startTime = new Date(startStr + "+05:30");
-                    const endTime = new Date(endStr + "+05:30");
+                    const startTime = new Date(startStr);
+                    const endTime = new Date(endStr);
 
                     if (now < startTime) {
                         badgeHTML = `<span class="badge badge-upcoming px-3 py-2"><i class="bi bi-calendar-event me-1"></i> UPCOMING</span>`;
@@ -505,7 +485,7 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             updateTestStatuses();
-            setInterval(updateTestStatuses, 5000); 
+            setInterval(updateTestStatuses, 10000); 
         });
 
         // Safe Delete Popups
